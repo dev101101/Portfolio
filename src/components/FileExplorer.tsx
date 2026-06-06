@@ -10,6 +10,7 @@ import {
   ModernFile,
   TerminalFile,
 } from "./FolderSvgs";
+import { getProjects } from "../data/db";
 
 interface ExplorerItem {
   name: string;
@@ -34,66 +35,29 @@ const SECTIONS: ExplorerSection[] = [
     id: "projects",
     label: "Projects",
     type: "folder",
-    items: [
-      {
-        name: "Portfolio OS",
-        type: "folder",
-        detail: (
-          <>
-            <h2>Portfolio OS</h2>
-            <p>A portfolio website styled as a desktop operating system</p>
-            <div className="project-tech" style={{ marginTop: 12 }}>
-              <span className="tech-tag">React</span>
-              <span className="tech-tag">TypeScript</span>
-              <span className="tech-tag">Vite</span>
-            </div>
-          </>
-        ),
-      },
-      {
-        name: "CLI Tool",
-        type: "folder",
-        detail: (
-          <>
-            <h2>CLI Tool</h2>
-            <p>A command-line utility for automating workflows</p>
-            <div className="project-tech" style={{ marginTop: 12 }}>
-              <span className="tech-tag">Rust</span>
-              <span className="tech-tag">Clap</span>
-            </div>
-          </>
-        ),
-      },
-      {
-        name: "Web Framework",
-        type: "folder",
-        detail: (
-          <>
-            <h2>Web Framework</h2>
-            <p>Lightweight reactive framework for the browser</p>
-            <div className="project-tech" style={{ marginTop: 12 }}>
-              <span className="tech-tag">TypeScript</span>
-              <span className="tech-tag">Web APIs</span>
-            </div>
-          </>
-        ),
-      },
-      {
-        name: "Game Engine",
-        type: "folder",
-        detail: (
-          <>
-            <h2>Game Engine</h2>
-            <p>2D game engine built from scratch</p>
-            <div className="project-tech" style={{ marginTop: 12 }}>
-              <span className="tech-tag">C++</span>
-              <span className="tech-tag">OpenGL</span>
-              <span className="tech-tag">SDL</span>
-            </div>
-          </>
-        ),
-      },
-    ],
+    items: getProjects().map((p) => ({
+      name: p.name,
+      type: "file" as const,
+      detail: (
+        <>
+          <pre
+            style={{
+              whiteSpace: "pre-wrap",
+              fontFamily: "var(--font-family)",
+              fontSize: "13px",
+              lineHeight: 1.6,
+            }}
+          >
+            {p.readme}
+          </pre>
+          <div className="project-tech" style={{ marginTop: 12 }}>
+            {p.topics.map((t) => (
+              <span key={t} className="tech-tag">{t}</span>
+            ))}
+          </div>
+        </>
+      ),
+    })),
   },
   {
     id: "blog",
@@ -341,7 +305,7 @@ function FileExplorer({ initialSection, theme, onPathChange, onOpenFile, onOpenA
                   <div
                     key={item.name}
                     className="filebrowser-item"
-                    onClick={() => {
+                    onDoubleClick={() => {
                       if (item.type === "folder") {
                         setSelectedItem(item.name);
                       } else {

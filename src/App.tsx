@@ -40,7 +40,7 @@ const CASCADE_LIMIT = 800;
 function App() {
   const [windows, setWindows] = useState<Record<string, WindowState>>(INITIAL_WINDOWS);
   const windowsRef = useRef(windows);
-  windowsRef.current = windows;
+  useEffect(() => { windowsRef.current = windows; }, [windows]);
   const [nextZ, setNextZ] = useState(6);
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("portfolio-theme") || "pixel";
@@ -55,7 +55,6 @@ function App() {
   const cascadeCount = useRef(0);
   const cascaded = useRef(new Set<string>());
   const [fileContents, setFileContents] = useState<Record<string, ReactNode>>({});
-  const nextFileId = useRef(0);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -73,13 +72,13 @@ function App() {
         return;
       }
 
-      const z = nextZ;
       setNextZ((prev) => prev + 1);
 
       setWindows((prev) => {
         const w = prev[id];
         if (!w) return prev;
-        return { ...prev, [id]: { ...w, isOpen: true, isMinimized: false, zIndex: z } };
+        const maxZ = Math.max(...Object.values(prev).map((w) => w.zIndex));
+        return { ...prev, [id]: { ...w, isOpen: true, isMinimized: false, zIndex: maxZ + 1 } };
       });
 
       cascadeCount.current += 1;
@@ -95,7 +94,7 @@ function App() {
         return { ...prev, [id]: { ...w, position: pos } };
       });
     },
-    [nextZ, basePos],
+    [basePos],
   );
 
   const setWindowTitle = useCallback((id: string, title: string) => {
@@ -104,8 +103,16 @@ function App() {
 
   const openFile = useCallback(
     (title: string, detail: ReactNode) => {
-      const id = `file-${nextFileId.current++}`;
-      const z = nextZ;
+      const id = `file-${title}`;
+      const existing = windowsRef.current[id];
+      if (existing?.isOpen) {
+        setWindows((prev) => {
+          const maxZ = Math.max(...Object.values(prev).map((w) => w.zIndex));
+          return { ...prev, [id]: { ...existing, isMinimized: false, zIndex: maxZ + 1 } };
+        });
+        return;
+      }
+
       setFileContents((prev) => ({ ...prev, [id]: detail }));
 
       cascadeCount.current += 1;
@@ -115,13 +122,13 @@ function App() {
         y: Math.min(basePos.y + cascadeCount.current * CASCADE_STEP, CASCADE_LIMIT),
       };
 
-      setWindows((prev) => ({
-        ...prev,
-        [id]: { ...createWindow(id, title, z), position: pos },
-      }));
-      setNextZ((z) => z + 1);
+      setWindows((prev) => {
+        const maxZ = Math.max(...Object.values(prev).map((w) => w.zIndex));
+        return { ...prev, [id]: { ...createWindow(id, title, maxZ + 1), position: pos } };
+      });
+      setNextZ((prev) => prev + 1);
     },
-    [nextZ, basePos],
+    [basePos],
   );
 
   const closeWindow = useCallback((id: string) => {

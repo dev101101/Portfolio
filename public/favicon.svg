@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Monitor body -->
+  <rect x="25" y="30" width="150" height="110" rx="6" fill="#1a1a2e" stroke="#f1c40f" stroke-width="4"/>
+  <!-- Screen -->
+  <rect x="35" y="40" width="130" height="85" rx="2" fill="#0f0c29"/>
+  <!-- Screen content - windows -->
+  <rect x="45" y="50" width="50" height="40" rx="2" fill="#e8dcc8" opacity="0.9"/>
+  <rect x="55" y="55" width="8" height="8" rx="1" fill="#e67e22"/>
+  <rect x="105" y="65" width="50" height="40" rx="2" fill="#2c3e50" opacity="0.85"/>
+  <rect x="115" y="70" width="8" height="8" rx="1" fill="#f1c40f"/>
+  <!-- Taskbar -->
+  <rect x="35" y="125" width="130" height="6" rx="1" fill="#1a1a2e" stroke="#f1c40f" stroke-width="1"/>
+  <!-- Start button -->
+  <rect x="40" y="126" width="16" height="4" rx="1" fill="#e67e22"/>
+  <!-- Text -->
+  <text x="100" y="172" text-anchor="middle" font-family="monospace" font-size="18" font-weight="bold" fill="#f1c40f">Portfolio OS</text>
+</svg>

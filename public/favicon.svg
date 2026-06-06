@@ -12,6 +12,4 @@
   <rect x="35" y="125" width="130" height="6" rx="1" fill="#1a1a2e" stroke="#f1c40f" stroke-width="1"/>
   <!-- Start button -->
   <rect x="40" y="126" width="16" height="4" rx="1" fill="#e67e22"/>
-  <!-- Text -->
-  <text x="100" y="172" text-anchor="middle" font-family="monospace" font-size="18" font-weight="bold" fill="#f1c40f">Portfolio OS</text>
 </svg>

@@ -41,7 +41,7 @@ function App() {
   const [windows, setWindows] = useState<Record<string, WindowState>>(INITIAL_WINDOWS);
   const windowsRef = useRef(windows);
   useEffect(() => { windowsRef.current = windows; }, [windows]);
-  const [nextZ, setNextZ] = useState(6);
+  const [, setNextZ] = useState(0);
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("portfolio-theme") || "pixel";
   });

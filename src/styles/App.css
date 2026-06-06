@@ -1072,7 +1072,8 @@ body,
 }
 
 .filebrowser-item-name {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size);
+    font-weight: 600;
     color: var(--content-text);
 }
 

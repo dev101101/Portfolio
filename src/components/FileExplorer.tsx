@@ -16,6 +16,7 @@ interface ExplorerItem {
   name: string;
   type: "file" | "folder";
   detail: ReactNode;
+  description?: string;
 }
 
 interface ExplorerSection {
@@ -38,24 +39,70 @@ const SECTIONS: ExplorerSection[] = [
     items: getProjects().map((p) => ({
       name: p.name,
       type: "file" as const,
+      description: p.description,
       detail: (
-        <>
-          <pre
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div
             style={{
-              whiteSpace: "pre-wrap",
-              fontFamily: "var(--font-family)",
-              fontSize: "13px",
-              lineHeight: 1.6,
+              padding: 16,
+              background: "var(--card-bg)",
+              border: "var(--card-border)",
             }}
           >
-            {p.readme}
-          </pre>
-          <div className="project-tech" style={{ marginTop: 12 }}>
+            <h1 style={{ margin: 0, fontSize: 20 }}>{p.name}</h1>
+            <p style={{ margin: "4px 0 0", color: "var(--content-subtitle)", fontSize: "var(--font-size-sm)" }}>
+              {p.language}
+            </p>
+          </div>
+
+          <div
+            style={{
+              padding: 16,
+              background: "var(--card-bg)",
+              border: "var(--card-border)",
+              fontFamily: "var(--font-family)",
+              fontSize: "13px",
+              lineHeight: 1.7,
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            {p.readme
+              .split("\n")
+              .map((line, i) => {
+                if (line.startsWith("# ")) {
+                  return (
+                    <h2 key={i} style={{ margin: "16px 0 8px", fontSize: 16 }}>
+                      {line.slice(2)}
+                    </h2>
+                  );
+                }
+                if (line.startsWith("## ")) {
+                  return (
+                    <h3 key={i} style={{ margin: "14px 0 6px", fontSize: 14, color: "var(--accent)" }}>
+                      {line.slice(3)}
+                    </h3>
+                  );
+                }
+                if (line.startsWith("- ")) {
+                  return (
+                    <li key={i} style={{ marginLeft: 16, listStyle: "disc" }}>
+                      {line.slice(2)}
+                    </li>
+                  );
+                }
+                if (line.trim() === "") {
+                  return <br key={i} />;
+                }
+                return <p key={i} style={{ margin: 0 }}>{line}</p>;
+              })}
+          </div>
+
+          <div className="project-tech">
             {p.topics.map((t) => (
               <span key={t} className="tech-tag">{t}</span>
             ))}
           </div>
-        </>
+        </div>
       ),
     })),
   },
@@ -314,7 +361,14 @@ function FileExplorer({ initialSection, theme, onPathChange, onOpenFile, onOpenA
                     }}
                   >
                     {item.type === "folder" ? <FolderIcon /> : <FileIcon />}
-                    <span className="filebrowser-item-name">{item.name}</span>
+                    <div>
+                      <div className="filebrowser-item-name">{item.name}</div>
+                      {item.description && (
+                        <div style={{ fontSize: "var(--font-size-xs)", color: "var(--content-subtitle)", marginTop: 2 }}>
+                          {item.description}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

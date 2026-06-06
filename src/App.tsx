@@ -1,11 +1,12 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo, type ReactNode } from "react";
 import type { WindowState } from "./types/desktop";
 import { FOLDERS } from "./types/desktop";
 import { THEMES } from "./types/themes";
 import Desktop from "./components/Desktop";
 import Taskbar from "./components/Taskbar";
 import Window from "./components/Window";
-import { AboutMe, Projects, Blog, GitHub, Speaking } from "./components/windows";
+import { AboutMe } from "./components/windows";
+import FileExplorer from "./components/FileExplorer";
 import "./styles/App.css";
 
 function createWindow(id: string, title: string, zIndex: number): WindowState {
@@ -27,22 +28,34 @@ function createWindow(id: string, title: string, zIndex: number): WindowState {
 
 const INITIAL_WINDOWS: Record<string, WindowState> = {
   about: { ...createWindow("about", "About Me", 1), isOpen: true },
-  projects: { ...createWindow("projects", "Projects", 2), isOpen: false },
-  blog: { ...createWindow("blog", "Blog", 3), isOpen: false },
-  github: { ...createWindow("github", "GitHub", 4), isOpen: false },
-  speaking: { ...createWindow("speaking", "Speaking", 5), isOpen: false },
+  projects: { ...createWindow("projects", "Desktop", 2), isOpen: false },
+  blog: { ...createWindow("blog", "Desktop", 3), isOpen: false },
+  github: { ...createWindow("github", "Desktop", 4), isOpen: false },
+  speaking: { ...createWindow("speaking", "Desktop", 5), isOpen: false },
 };
 
-const CASCADE_STEP = 30;
-const CASCADE_LIMIT = 200;
+const CASCADE_STEP = 14;
+const CASCADE_LIMIT = 800;
 
 function App() {
   const [windows, setWindows] = useState<Record<string, WindowState>>(INITIAL_WINDOWS);
+  const windowsRef = useRef(windows);
+  windowsRef.current = windows;
   const [nextZ, setNextZ] = useState(6);
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("portfolio-theme") || "pixel";
   });
-  const cascadeRef = useRef({ x: 0, y: 0 });
+  const basePos = useMemo(
+    () => ({
+      x: Math.max(0, (window.innerWidth - 560) / 2),
+      y: Math.max(0, (window.innerHeight - 400 - 40) / 2),
+    }),
+    [],
+  );
+  const cascadeCount = useRef(0);
+  const cascaded = useRef(new Set<string>());
+  const [fileContents, setFileContents] = useState<Record<string, ReactNode>>({});
+  const nextFileId = useRef(0);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -51,34 +64,77 @@ function App() {
 
   const openFolder = useCallback(
     (id: string) => {
+      const existing = windowsRef.current[id];
+      if (existing?.isOpen) {
+        setWindows((prev) => {
+          const maxZ = Math.max(...Object.values(prev).map((w) => w.zIndex));
+          return { ...prev, [id]: { ...existing, isMinimized: false, zIndex: maxZ + 1 } };
+        });
+        return;
+      }
+
+      const z = nextZ;
+      setNextZ((prev) => prev + 1);
+
       setWindows((prev) => {
         const w = prev[id];
         if (!w) return prev;
+        return { ...prev, [id]: { ...w, isOpen: true, isMinimized: false, zIndex: z } };
+      });
 
-        const offset = cascadeRef.current;
-        const pos = {
-          x: offset.x,
-          y: offset.y,
-        };
-        offset.x += CASCADE_STEP;
-        offset.y += CASCADE_STEP;
-        if (offset.x > CASCADE_LIMIT || offset.y > CASCADE_LIMIT) {
-          offset.x = 0;
-          offset.y = 0;
-        }
+      cascadeCount.current += 1;
+      cascaded.current.add(id);
+      const pos = {
+        x: Math.min(basePos.x + cascadeCount.current * CASCADE_STEP, CASCADE_LIMIT),
+        y: Math.min(basePos.y + cascadeCount.current * CASCADE_STEP, CASCADE_LIMIT),
+      };
 
-        setNextZ((z) => z + 1);
-        return {
-          ...prev,
-          [id]: { ...w, isOpen: true, isMinimized: false, position: pos, zIndex: nextZ },
-        };
+      setWindows((prev) => {
+        const w = prev[id];
+        if (!w || !w.isOpen) return prev;
+        return { ...prev, [id]: { ...w, position: pos } };
       });
     },
-    [nextZ],
+    [nextZ, basePos],
+  );
+
+  const setWindowTitle = useCallback((id: string, title: string) => {
+    setWindows((prev) => ({ ...prev, [id]: { ...prev[id], title } }));
+  }, []);
+
+  const openFile = useCallback(
+    (title: string, detail: ReactNode) => {
+      const id = `file-${nextFileId.current++}`;
+      const z = nextZ;
+      setFileContents((prev) => ({ ...prev, [id]: detail }));
+
+      cascadeCount.current += 1;
+      cascaded.current.add(id);
+      const pos = {
+        x: Math.min(basePos.x + cascadeCount.current * CASCADE_STEP, CASCADE_LIMIT),
+        y: Math.min(basePos.y + cascadeCount.current * CASCADE_STEP, CASCADE_LIMIT),
+      };
+
+      setWindows((prev) => ({
+        ...prev,
+        [id]: { ...createWindow(id, title, z), position: pos },
+      }));
+      setNextZ((z) => z + 1);
+    },
+    [nextZ, basePos],
   );
 
   const closeWindow = useCallback((id: string) => {
     setWindows((prev) => ({ ...prev, [id]: { ...prev[id], isOpen: false } }));
+    setFileContents((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+    if (cascaded.current.has(id)) {
+      cascaded.current.delete(id);
+      cascadeCount.current = Math.max(0, cascadeCount.current - 1);
+    }
   }, []);
 
   const minimizeWindow = useCallback((id: string) => {
@@ -127,10 +183,18 @@ function App() {
             onResize={(w_, h) => resizeWindow(w.id, w_, h)}
           >
             {w.id === "about" && <AboutMe />}
-            {w.id === "projects" && <Projects />}
-            {w.id === "blog" && <Blog />}
-            {w.id === "github" && <GitHub />}
-            {w.id === "speaking" && <Speaking />}
+            {["projects", "blog", "github", "speaking"].includes(w.id) && (
+              <FileExplorer
+                initialSection={w.id}
+                theme={theme}
+                onPathChange={(path) => setWindowTitle(w.id, path)}
+                onOpenFile={(title, detail) => openFile(title, detail)}
+                onOpenAbout={() => openFolder("about")}
+              />
+            )}
+            {w.id.startsWith("file-") && (
+              <div className="window-content-inner">{fileContents[w.id]}</div>
+            )}
           </Window>
         ))}
       <Taskbar

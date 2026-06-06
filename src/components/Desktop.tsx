@@ -80,6 +80,7 @@ function Desktop({ folders, theme, onOpenFolder }: DesktopProps) {
           <FolderIcon
             key={f.id}
             label={f.label}
+            type={f.type}
             theme={theme}
             position={p}
             onMove={(x, y) => moveIcon(f.id, x, y)}

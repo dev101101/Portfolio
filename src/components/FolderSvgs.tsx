@@ -79,4 +79,98 @@ function TerminalFolder() {
   );
 }
 
-export { PixelFolder, ClassicFolder, ModernFolder, TerminalFolder };
+/* ---- File icons ---- */
+
+function PixelFile() {
+  return (
+    <svg className="folder-svg" viewBox="0 0 24 24" fill="currentColor">
+      <rect x="4" y="2" width="16" height="20" fill="var(--file-body, #e8dcc8)" />
+      <rect x="4" y="2" width="16" height="2" fill="var(--icon-color)" />
+      <rect x="4" y="4" width="12" height="2" fill="var(--file-fold, #d5ccb8)" />
+      <rect x="6" y="9" width="12" height="1" fill="var(--file-lines, rgba(0,0,0,0.2))" />
+      <rect x="6" y="12" width="8" height="1" fill="var(--file-lines, rgba(0,0,0,0.2))" />
+      <rect x="6" y="15" width="10" height="1" fill="var(--file-lines, rgba(0,0,0,0.2))" />
+    </svg>
+  );
+}
+
+function ClassicFile() {
+  return (
+    <svg className="folder-svg" viewBox="0 0 24 24">
+      <path
+        d="M5 2h10l5 5v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"
+        fill="#ffffff"
+        stroke="#808080"
+        strokeWidth="0.8"
+      />
+      <path d="M15 2v4a1 1 0 0 0 1 1h4" fill="#e0e0e0" stroke="#808080" strokeWidth="0.5" />
+      <rect x="6" y="10" width="11" height="1" fill="#c0c0c0" />
+      <rect x="6" y="13" width="8" height="1" fill="#c0c0c0" />
+      <rect x="6" y="16" width="10" height="1" fill="#c0c0c0" />
+    </svg>
+  );
+}
+
+function ModernFile() {
+  return (
+    <svg className="folder-svg" viewBox="0 0 128 128">
+      <path
+        d="M 24 8 h 56 l 16 16 v 96 a 8 8 0 0 1 -8 8 H 24 a 8 8 0 0 1 -8 -8 V 16 a 8 8 0 0 1 8 -8 z"
+        fill="#e8e8e8"
+        stroke="#ccc"
+        strokeWidth="1"
+      />
+      <path d="M 80 8 v 16 h 16" fill="#d0d0d0" stroke="#ccc" strokeWidth="1" />
+      <rect x="28" y="48" width="64" height="4" rx="2" fill="#bbb" />
+      <rect x="28" y="64" width="48" height="4" rx="2" fill="#bbb" />
+      <rect x="28" y="80" width="56" height="4" rx="2" fill="#bbb" />
+    </svg>
+  );
+}
+
+function TerminalFile() {
+  return (
+    <svg
+      className="folder-svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <path d="M5 2h9l5 5v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" />
+      <path d="M14 2v4a1 1 0 0 0 1 1h4" />
+      <path d="M7 11l3 2-3 2" strokeWidth="1" />
+      <path d="M12 14h4" strokeWidth="1" />
+    </svg>
+  );
+}
+
+function FolderSmallSvg() {
+  return (
+    <svg className="filebrowser-icon" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M2 6h7l2 3h11v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z" />
+    </svg>
+  );
+}
+
+function FileSmallSvg() {
+  return (
+    <svg className="filebrowser-icon" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M6 2h9l5 5v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" />
+      <path d="M15 2v4a1 1 0 0 0 1 1h4" fill="rgba(0,0,0,0.1)" />
+    </svg>
+  );
+}
+
+export {
+  PixelFolder,
+  ClassicFolder,
+  ModernFolder,
+  TerminalFolder,
+  PixelFile,
+  ClassicFile,
+  ModernFile,
+  TerminalFile,
+  FolderSmallSvg,
+  FileSmallSvg,
+};

@@ -69,6 +69,14 @@
     --start-menu-item-selected: rgba(230, 126, 34, 0.3);
 }
 
+/* Pixel desktop background image (overrides --desktop-bg) */
+[data-theme="pixel"] .app {
+    background-image: url(/wallhaven-rdrlkm.webp);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
 /* ----- Classic (Win95) ----- */
 [data-theme="classic"] .app {
     --font-family: "MS Sans Serif", "Segoe UI", system-ui, sans-serif;
@@ -133,6 +141,14 @@
     --start-menu-title: #000000;
     --start-menu-item-hover: #000080;
     --start-menu-item-selected: #000080;
+}
+
+/* Classic desktop background image */
+[data-theme="classic"] .app {
+    background-image: url(/wp2660135-windows-95-wallpaper-hd.webp);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 /* ----- Modern (clean) ----- */
@@ -201,6 +217,14 @@
     --start-menu-title: #fff;
     --start-menu-item-hover: rgba(255, 255, 255, 0.08);
     --start-menu-item-selected: rgba(74, 111, 165, 0.4);
+}
+
+/* Modern desktop background image */
+[data-theme="modern"] .app {
+    background-image: url(/wallhaven-vmy7j8.webp);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 /* ----- Terminal ----- */
@@ -756,11 +780,11 @@ body,
 }
 
 .about-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
 }
 
 [data-theme="pixel"] .about-avatar {
@@ -1013,6 +1037,78 @@ body,
 }
 
 /* ============================================================
+   FILE BROWSER
+   ============================================================ */
+.filebrowser-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.filebrowser-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.1s;
+    border: 1px solid transparent;
+}
+
+.filebrowser-item:hover {
+    background: var(--card-bg);
+    border-color: var(--card-border);
+}
+
+.filebrowser-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    color: var(--icon-color);
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+}
+
+[data-theme="pixel"] .filebrowser-icon {
+    image-rendering: pixelated;
+}
+
+.filebrowser-item-name {
+    font-size: var(--font-size-sm);
+    color: var(--content-text);
+}
+
+.filebrowser-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    margin-bottom: 12px;
+    background: var(--card-bg);
+    border: var(--card-border);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    color: var(--content-text);
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+
+.filebrowser-back:hover {
+    border-color: var(--card-hover-border);
+}
+
+[data-theme="pixel"] .filebrowser-back,
+[data-theme="classic"] .filebrowser-back,
+[data-theme="terminal"] .filebrowser-back {
+    border-radius: 0;
+}
+
+[data-theme="classic"] .filebrowser-back {
+    box-shadow:
+        inset 1px 1px 0 #fff,
+        inset -1px -1px 0 #808080;
+    padding: 2px 10px;
+}
+
+/* ============================================================
    TASKBAR
    ============================================================ */
 .taskbar {
@@ -1240,6 +1336,69 @@ body,
 
 [data-theme="classic"] .start-menu-item-desc {
     color: #666;
+}
+
+/* ============================================================
+   FILE EXPLORER
+   ============================================================ */
+.explorer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.explorer-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.explorer-sidebar {
+    width: 180px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    border-right: 2px solid var(--card-border);
+    padding: 6px 0;
+    background: var(--card-bg);
+}
+
+.explorer-sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    font-size: var(--font-size-sm);
+    color: var(--content-text);
+    cursor: pointer;
+    transition: background 0.1s;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+}
+
+.explorer .folder-svg {
+    width: 24px;
+    height: 24px;
+}
+
+.explorer-sidebar-item:hover {
+    background: var(--card-bg);
+}
+
+.explorer-sidebar-item.active {
+    background: var(--card-border);
+    font-weight: 600;
+}
+
+[data-theme="terminal"] .explorer-sidebar-item.active {
+    background: #003300;
+}
+
+.explorer-content {
+    flex: 1;
+    overflow-y: auto;
+    background: var(--window-bg);
 }
 
 /* ============================================================

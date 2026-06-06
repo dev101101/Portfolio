@@ -1,3 +1,5 @@
+import FileBrowser from "../FileBrowser";
+
 const posts = [
   {
     date: "2026-05-20",
@@ -23,19 +25,20 @@ const posts = [
 
 function Blog() {
   return (
-    <div className="window-content-inner">
-      <h1>Blog</h1>
-      <p className="window-subtitle">Latest writings</p>
-      <div className="blog-list">
-        {posts.map((post) => (
-          <article key={post.title} className="blog-post">
+    <FileBrowser
+      title="Blog"
+      items={posts.map((post) => ({
+        name: `${post.date} - ${post.title}`,
+        type: "file" as const,
+        detail: (
+          <>
             <time className="blog-date">{post.date}</time>
-            <h3>{post.title}</h3>
+            <h2>{post.title}</h2>
             <p>{post.excerpt}</p>
-          </article>
-        ))}
-      </div>
-    </div>
+          </>
+        ),
+      }))}
+    />
   );
 }
 

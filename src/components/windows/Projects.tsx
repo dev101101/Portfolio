@@ -1,3 +1,5 @@
+import FileBrowser from "../FileBrowser";
+
 const projects = [
   {
     title: "Portfolio OS",
@@ -23,25 +25,24 @@ const projects = [
 
 function Projects() {
   return (
-    <div className="window-content-inner">
-      <h1>Projects</h1>
-      <p className="window-subtitle">Things I've built</p>
-      <div className="project-list">
-        {projects.map((p) => (
-          <div key={p.title} className="project-card">
-            <h3>{p.title}</h3>
+    <FileBrowser
+      title="Projects"
+      items={projects.map((p) => ({
+        name: p.title,
+        type: "folder" as const,
+        detail: (
+          <>
+            <h2>{p.title}</h2>
             <p>{p.desc}</p>
-            <div className="project-tech">
+            <div className="project-tech" style={{ marginTop: 12 }}>
               {p.tech.map((t) => (
-                <span key={t} className="tech-tag">
-                  {t}
-                </span>
+                <span key={t} className="tech-tag">{t}</span>
               ))}
             </div>
-          </div>
-        ))}
-      </div>
-    </div>
+          </>
+        ),
+      }))}
+    />
   );
 }
 

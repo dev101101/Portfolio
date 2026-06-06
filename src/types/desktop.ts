@@ -11,13 +11,13 @@ export interface WindowState {
 export interface Folder {
   id: string;
   label: string;
-  icon: string;
+  type: "file" | "folder";
 }
 
 export const FOLDERS: Folder[] = [
-  { id: "about", label: "About Me", icon: "📁" },
-  { id: "projects", label: "Projects", icon: "📁" },
-  { id: "blog", label: "Blog", icon: "📁" },
-  { id: "github", label: "GitHub", icon: "📁" },
-  { id: "speaking", label: "Speaking", icon: "📁" },
+  { id: "about", label: "About Me", type: "file" },
+  { id: "projects", label: "Projects", type: "folder" },
+  { id: "blog", label: "Blog", type: "folder" },
+  { id: "github", label: "GitHub", type: "folder" },
+  { id: "speaking", label: "Speaking", type: "folder" },
 ];

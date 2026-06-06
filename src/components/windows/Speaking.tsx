@@ -1,3 +1,5 @@
+import FileBrowser from "../FileBrowser";
+
 const talks = [
   {
     title: "Building for the Browser",
@@ -21,22 +23,23 @@ const talks = [
 
 function Speaking() {
   return (
-    <div className="window-content-inner">
-      <h1>Speaking</h1>
-      <p className="window-subtitle">Talks & conferences</p>
-      <div className="talk-list">
-        {talks.map((talk) => (
-          <div key={talk.title} className="talk-card">
+    <FileBrowser
+      title="Speaking"
+      items={talks.map((talk) => ({
+        name: `${talk.title} @ ${talk.event}`,
+        type: "file" as const,
+        detail: (
+          <>
             <div className="talk-meta">
               <span className="talk-event">{talk.event}</span>
               <span className="talk-date">{talk.date}</span>
             </div>
-            <h3>{talk.title}</h3>
+            <h2>{talk.title}</h2>
             <p>{talk.desc}</p>
-          </div>
-        ))}
-      </div>
-    </div>
+          </>
+        ),
+      }))}
+    />
   );
 }
 

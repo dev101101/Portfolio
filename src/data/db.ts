@@ -29,7 +29,7 @@ function saveDbToStorage(d: Database) {
     const data = d.export();
     let binary = "";
     for (let i = 0; i < data.length; i++) {
-      binary += String.fromCharCode(data[i]);
+      binary += String.fromCharCode(data[i]!);
     }
     localStorage.setItem(DB_STORAGE_KEY, btoa(binary));
   } catch { /* ignore */ }

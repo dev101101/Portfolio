@@ -11,7 +11,7 @@ function Clock() {
   const fmt = (n: number) => n.toString().padStart(2, "0");
 
   return (
-    <div className="clock">
+    <div className="clock" role="timer" aria-label={`Current time: ${fmt(time.getHours())}:${fmt(time.getMinutes())}`}>
       {fmt(time.getHours())}:{fmt(time.getMinutes())}
     </div>
   );

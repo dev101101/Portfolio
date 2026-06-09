@@ -9,7 +9,7 @@ function File({ detail, onBack }: FileProps) {
   return (
     <div className="window-content-inner">
       {onBack && (
-        <button className="filebrowser-back" onClick={onBack}>
+        <button className="filebrowser-back" onClick={onBack} aria-label="Go back">
           ← Back
         </button>
       )}

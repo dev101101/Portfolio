@@ -66,6 +66,33 @@ function Window({
     [onFocus, onMove, win.position],
   );
 
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      onFocus();
+      const touch = e.touches[0]!;
+      const el = dragRef.current;
+      el.dragging = true;
+      el.startX = touch.clientX;
+      el.startY = touch.clientY;
+      el.startPosX = win.position.x;
+      el.startPosY = win.position.y;
+
+      const onDrag = (ev: TouchEvent) => {
+        if (!el.dragging) return;
+        const t = ev.touches[0]!;
+        onMove(el.startPosX + t.clientX - el.startX, el.startPosY + t.clientY - el.startY);
+      };
+      const onUp = () => {
+        el.dragging = false;
+        document.removeEventListener("touchmove", onDrag);
+        document.removeEventListener("touchend", onUp);
+      };
+      document.addEventListener("touchmove", onDrag, { passive: false });
+      document.addEventListener("touchend", onUp);
+    },
+    [onFocus, onMove, win.position],
+  );
+
   const handleResizeDown = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -95,11 +122,44 @@ function Window({
     [onResize, win.size],
   );
 
+  const handleResizeTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      e.stopPropagation();
+      setResizing(true);
+      const touch = e.touches[0]!;
+      const el = resizeRef.current;
+      el.resizing = true;
+      el.startX = touch.clientX;
+      el.startY = touch.clientY;
+      el.startW = win.size.width;
+      el.startH = win.size.height;
+
+      const onMove = (ev: TouchEvent) => {
+        if (!el.resizing) return;
+        const t = ev.touches[0]!;
+        const dw = t.clientX - el.startX;
+        const dh = t.clientY - el.startY;
+        onResize(Math.max(300, el.startW + dw), Math.max(200, el.startH + dh));
+      };
+      const onUp = () => {
+        el.resizing = false;
+        setResizing(false);
+        document.removeEventListener("touchmove", onMove);
+        document.removeEventListener("touchend", onUp);
+      };
+      document.addEventListener("touchmove", onMove, { passive: false });
+      document.addEventListener("touchend", onUp);
+    },
+    [onResize, win.size],
+  );
+
   if (win.isMinimized) return null;
 
   return (
     <div
       className={`window${resizing ? " resizing" : ""}`}
+      role="dialog"
+      aria-label={win.title}
       style={{
         left: win.position.x,
         top: win.position.y,
@@ -109,17 +169,22 @@ function Window({
       }}
       onMouseDown={onFocus}
     >
-      <div className="window-titlebar" onMouseDown={handleMouseDown} onDoubleClick={toggleMaximize}>
+      <div
+        className="window-titlebar"
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+        onDoubleClick={toggleMaximize}
+      >
         <span className="window-title">{win.title}</span>
         <div className="window-controls">
-          <button className="win-btn minimize" onClick={onMinimize} title="Minimize" />
-          <button className="win-btn maximize" onClick={toggleMaximize} title={maximized ? "Restore" : "Maximize"} />
-          <button className="win-btn close" onClick={onClose} title="Close" />
+          <button className="win-btn minimize" onClick={onMinimize} title="Minimize" aria-label="Minimize window" />
+          <button className="win-btn maximize" onClick={toggleMaximize} title={maximized ? "Restore" : "Maximize"} aria-label={maximized ? "Restore window" : "Maximize window"} />
+          <button className="win-btn close" onClick={onClose} title="Close" aria-label="Close window" />
         </div>
       </div>
       {navbar && <div className="window-navbar">{navbar}</div>}
       <div className="window-content">{children}</div>
-      <div className="window-resize-handle" onMouseDown={handleResizeDown} />
+      <div className="window-resize-handle" onMouseDown={handleResizeDown} onTouchStart={handleResizeTouchStart} />
     </div>
   );
 }

@@ -22,18 +22,21 @@ export default function Taskbar({
   onFocus,
 }: TaskbarProps) {
   return (
-    <div className="taskbar">
+    <div className="taskbar" role="toolbar" aria-label="Taskbar">
       <StartMenuButton
         themes={themes}
         currentTheme={currentTheme}
         onSelectTheme={onSelectTheme}
       />
-      <div className="taskbar-items">
+      <div className="taskbar-items" role="tablist" aria-label="Open windows">
         {windows
           .filter((w) => w.isOpen)
           .map((w) => (
             <button
               key={w.id}
+              role="tab"
+              aria-selected={!w.isMinimized}
+              aria-label={w.title}
               className={`taskbar-item${w.isMinimized ? "" : " active"}`}
               onMouseDown={() => {
                 if (w.isMinimized) {
@@ -69,6 +72,9 @@ function StartMenuButton({
       <button
         className={`taskbar-start${open ? " active" : ""}`}
         onClick={() => setOpen((v) => !v)}
+        aria-label="Open theme menu"
+        aria-expanded={open}
+        aria-haspopup="menu"
       >
         Themes
       </button>

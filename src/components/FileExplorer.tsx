@@ -120,19 +120,23 @@ function FileExplorer({
     return (
       <div className="explorer">
         <div className="explorer-body">
-          <div className="explorer-sidebar">
+          <div className="explorer-sidebar" role="tablist" aria-label="Sections">
             {sections.map((s) => (
               <div
                 key={s.id}
+                role="tab"
+                tabIndex={0}
+                aria-selected={s.id === selectedSection}
                 className={`explorer-sidebar-item${s.id === selectedSection ? " active" : ""}`}
                 onClick={() => handleSectionClick(s.id)}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSectionClick(s.id); } }}
               >
                 {s.type === "folder" ? <FolderIcon /> : <FileIcon />}
                 <span>{s.label}</span>
               </div>
             ))}
           </div>
-          <div className="explorer-content" />
+          <div className="explorer-content" role="tabpanel" aria-label="Content" />
         </div>
       </div>
     );
@@ -141,13 +145,16 @@ function FileExplorer({
   return (
     <div className="explorer">
       <div className="explorer-body">
-        {/* Sidebar */}
-        <div className="explorer-sidebar">
+        <div className="explorer-sidebar" role="tablist" aria-label="Sections">
           {sections.map((s) => (
             <div
               key={s.id}
+              role="tab"
+              tabIndex={0}
+              aria-selected={s.id === selectedSection}
               className={`explorer-sidebar-item${s.id === selectedSection ? " active" : ""}`}
               onClick={() => handleSectionClick(s.id)}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSectionClick(s.id); } }}
             >
               {s.type === "folder" ? <FolderIcon /> : <FileIcon />}
               <span>{s.label}</span>
@@ -155,8 +162,7 @@ function FileExplorer({
           ))}
         </div>
 
-        {/* Content panel */}
-        <div className="explorer-content">
+        <div className="explorer-content" role="tabpanel" aria-label="Content">
           {selectedItem ? (
             <File
               detail={

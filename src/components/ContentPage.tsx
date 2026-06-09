@@ -26,10 +26,10 @@ interface ContentPageProps {
 function ContentPage({ item }: ContentPageProps) {
   const parts: ReactNode[] = [];
 
-  if (item.date && item.meta?.event) {
+  if (item.date && item.meta?.["event"]) {
     parts.push(
       <div key="talk-meta" className="talk-meta" style={{ marginBottom: 8 }}>
-        <span className="talk-event">{item.meta.event}</span>
+        <span className="talk-event">{item.meta["event"]}</span>
         <span className="talk-date" style={{ marginLeft: 12 }}>{item.date}</span>
       </div>
     );
@@ -43,10 +43,10 @@ function ContentPage({ item }: ContentPageProps) {
     parts.push(<h2 key="title">{item.title}</h2>);
   }
 
-  if (item.meta?.language) {
+  if (item.meta?.["language"]) {
     parts.push(
       <p key="language" style={{ margin: "4px 0 12px", color: "var(--content-subtitle)", fontSize: "var(--font-size-sm)" }}>
-        {item.meta.language}
+        {item.meta["language"]}
       </p>
     );
   }

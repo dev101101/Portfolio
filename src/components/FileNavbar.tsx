@@ -2,8 +2,11 @@ import { useState, useRef, useEffect } from "react";
 
 interface FileNavbarProps {
   onSave: () => void;
+  onPreview: () => void;
+  previewing: boolean;
   onSelectAll: () => void;
   onSaveForever: () => void;
+  onOpenHelp: () => void;
 }
 
 interface MenuItem {
@@ -30,16 +33,29 @@ function MenuDropdown({ items, onClose }: { items: MenuItem[]; onClose: () => vo
     <div
       ref={ref}
       className="menu-dropdown"
+      role="menu"
       onClick={(e) => e.stopPropagation()}
     >
       {items.map((item) => (
         <div
           key={item.label}
+          role="menuitem"
+          tabIndex={item.disabled ? -1 : 0}
+          aria-disabled={item.disabled}
           className={`menu-dropdown-item${item.disabled ? " disabled" : ""}`}
           onClick={() => {
             if (!item.disabled) {
               item.onClick();
               onClose();
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              if (!item.disabled) {
+                item.onClick();
+                onClose();
+              }
             }
           }}
         >
@@ -51,7 +67,7 @@ function MenuDropdown({ items, onClose }: { items: MenuItem[]; onClose: () => vo
   );
 }
 
-function FileNavbar({ onSave, onSelectAll, onSaveForever }: FileNavbarProps) {
+function FileNavbar({ onSave, onPreview, previewing, onSelectAll, onSaveForever, onOpenHelp }: FileNavbarProps) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   const menus: { label: string; items: MenuItem[] }[] = [
@@ -59,6 +75,7 @@ function FileNavbar({ onSave, onSelectAll, onSaveForever }: FileNavbarProps) {
       label: "File",
       items: [
         { label: "Save", shortcut: "Ctrl+S", onClick: onSave },
+        { label: previewing ? "Edit" : "Preview", onClick: onPreview },
         { label: "Save Forever", onClick: onSaveForever },
       ],
     },
@@ -71,16 +88,19 @@ function FileNavbar({ onSave, onSelectAll, onSaveForever }: FileNavbarProps) {
     {
       label: "Help",
       items: [
-        { label: "About Text Editor", onClick: () => alert("Simple text editor for portfolio file sections.") },
+        { label: "About Text Editor", onClick: onOpenHelp },
       ],
     },
   ];
 
   return (
-    <div className="menubar">
+    <div className="menubar" role="menubar">
       {menus.map((menu) => (
         <div key={menu.label} className="menubar-menu">
           <button
+            role="menuitem"
+            aria-haspopup="menu"
+            aria-expanded={openMenu === menu.label}
             className={`menubar-button${openMenu === menu.label ? " active" : ""}`}
             onClick={() => setOpenMenu(openMenu === menu.label ? null : menu.label)}
             onMouseEnter={() => { if (openMenu) setOpenMenu(menu.label); }}

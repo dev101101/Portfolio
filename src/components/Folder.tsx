@@ -38,11 +38,13 @@ function Folder({ items, theme, onOpenFile, onSelectFolder }: FolderProps) {
 
   return (
     <div className="window-content-inner">
-      <div className="filebrowser-list">
+      <div className="filebrowser-list" role="list">
         {items.map((item) => (
           <div
             key={item.name}
             className="filebrowser-item"
+            role="listitem"
+            tabIndex={0}
             onDoubleClick={() => {
               if (item.url) {
                 window.open(item.url, "_blank");
@@ -50,6 +52,18 @@ function Folder({ items, theme, onOpenFile, onSelectFolder }: FolderProps) {
                 onSelectFolder?.(item.name);
               } else {
                 onOpenFile?.(item.name, item.detail);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                if (item.url) {
+                  window.open(item.url, "_blank");
+                } else if (item.type === "folder") {
+                  onSelectFolder?.(item.name);
+                } else {
+                  onOpenFile?.(item.name, item.detail);
+                }
               }
             }}
           >

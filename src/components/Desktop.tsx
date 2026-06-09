@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import type { Folder } from "../types/desktop";
 import FolderIcon from "./FolderIcon";
 import ContextMenu from "./ContextMenu";
@@ -7,6 +7,12 @@ import { PROTECTED_IDS } from "../data/constants";
 const GRID_SIZE_X = 100;
 const GRID_SIZE_Y = 110;
 const STORAGE_KEY = "portfolio-desktop-positions";
+
+const WALLPAPERS: Record<string, string> = {
+  pixel: "/wallhaven-rdrlkm.webp",
+  classic: "/wp2660135-windows-95-wallpaper-hd.webp",
+  modern: "/wallhaven-vmy7j8.webp",
+};
 
 function getGridCols() {
   return Math.max(1, Math.floor(window.innerWidth / GRID_SIZE_X));
@@ -44,6 +50,7 @@ type ContextMenuState =
   | null;
 
 function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSection, onNewFolder, onNewFile, onRefresh }: DesktopProps) {
+  const [wallpaperLoaded, setWallpaperLoaded] = useState(() => !WALLPAPERS[theme]);
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -126,6 +133,30 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
   }, []);
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const pendingRenameRef = useRef<string | null>(null);
+  const renamingInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (pendingRenameRef.current) {
+      setRenamingId(pendingRenameRef.current);
+      pendingRenameRef.current = null;
+    }
+  }, [folders]);
+
+  useEffect(() => {
+    if (renamingId && renamingInputRef.current) {
+      renamingInputRef.current.focus();
+      renamingInputRef.current.select();
+    }
+  }, [renamingId]);
+
+  const handleRenameSubmit = useCallback((id: string, label: string) => {
+    if (label.trim()) {
+      onRenameSection(id, label.trim());
+    }
+    setRenamingId(null);
+  }, [onRenameSection]);
 
   const handleIconContextMenu = useCallback((e: React.MouseEvent, folderId: string) => {
     e.preventDefault();
@@ -141,10 +172,29 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
 
   const closeContextMenu = useCallback(() => setContextMenu(null), []);
 
+  const handleNewFolder = useCallback(() => {
+    const id = `folder-${Date.now()}`;
+    pendingRenameRef.current = id;
+    onNewFolder(id, "New Folder");
+    closeContextMenu();
+  }, [onNewFolder, closeContextMenu]);
+
+  const handleNewFile = useCallback(() => {
+    const id = `file-${Date.now()}`;
+    pendingRenameRef.current = id;
+    onNewFile(id, "New File");
+    closeContextMenu();
+  }, [onNewFile, closeContextMenu]);
+
   return (
-    <div className="desktop" onContextMenu={handleDesktopContextMenu}>
+    <div className="desktop" role="region" aria-label="Desktop" onContextMenu={handleDesktopContextMenu}>
+      <div key={theme} className={`desktop-wallpaper ${wallpaperLoaded ? "loaded" : ""}`} aria-hidden="true" />
+      {WALLPAPERS[theme] && (
+        <img key={theme} src={WALLPAPERS[theme]!} onLoad={() => setWallpaperLoaded(true)} style={{ display: "none" }} alt="" />
+      )}
       {folders.map((f) => {
-        const p = allPositions[f.id];
+        const p = allPositions[f.id] ?? { x: 0, y: 0 };
+        const isRenaming = renamingId === f.id;
         return (
           <FolderIcon
             key={f.id}
@@ -156,6 +206,10 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
             onDrop={(x, y) => dropIcon(f.id, x, y)}
             onDoubleClick={() => onOpenFolder(f.id)}
             onContextMenu={(e) => handleIconContextMenu(e, f.id)}
+            isRenaming={isRenaming}
+            onRenameSubmit={(label) => handleRenameSubmit(f.id, label)}
+            onRenameCancel={() => setRenamingId(null)}
+            inputRef={isRenaming ? renamingInputRef : undefined}
           />
         );
       })}
@@ -165,7 +219,7 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
           y={contextMenu.y}
           actions={[
             { label: "Open", onClick: () => onOpenFolder(contextMenu.folderId) },
-            { label: "Rename", onClick: () => { const label = prompt("Enter new name:"); if (label) onRenameSection(contextMenu.folderId, label); }, disabled: contextMenu.isProtected },
+            { label: "Rename", onClick: () => { setRenamingId(contextMenu.folderId); }, disabled: contextMenu.isProtected },
             { label: "Delete", onClick: () => onDeleteSection(contextMenu.folderId), disabled: contextMenu.isProtected },
           ]}
           onClose={closeContextMenu}
@@ -176,16 +230,8 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
           x={contextMenu.x}
           y={contextMenu.y}
           actions={[
-            { label: "New Folder", onClick: () => {
-              const id = prompt("Folder ID:");
-              const label = prompt("Folder name:");
-              if (id && label) onNewFolder(id, label);
-            }},
-            { label: "New File", onClick: () => {
-              const id = prompt("File ID:");
-              const label = prompt("File name:");
-              if (id && label) onNewFile(id, label);
-            }},
+            { label: "New Folder", onClick: handleNewFolder },
+            { label: "New File", onClick: handleNewFile },
             { label: "Refresh", onClick: () => onRefresh() },
           ]}
           onClose={closeContextMenu}

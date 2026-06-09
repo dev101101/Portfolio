@@ -22,13 +22,27 @@ function ContextMenu({ x, y, actions, onClose }: ContextMenuProps) {
         onClose();
       }
     };
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("keydown", keyHandler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("keydown", keyHandler);
+    };
   }, [onClose]);
+
+  useEffect(() => {
+    const first = ref.current?.querySelector<HTMLElement>("[role='menuitem']:not([aria-disabled='true'])");
+    first?.focus();
+  }, []);
 
   return (
     <div
       ref={ref}
+      role="menu"
+      aria-label="Context menu"
       style={{
         position: "fixed",
         left: x,
@@ -47,9 +61,19 @@ function ContextMenu({ x, y, actions, onClose }: ContextMenuProps) {
       {actions.map((a) => (
         <div
           key={a.label}
+          role="menuitem"
+          tabIndex={a.disabled ? -1 : 0}
+          aria-disabled={a.disabled}
           onClick={() => {
             if (!a.disabled) a.onClick();
             onClose();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              if (!a.disabled) a.onClick();
+              onClose();
+            }
           }}
           style={{
             padding: "6px 16px",

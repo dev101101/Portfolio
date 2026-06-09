@@ -40,14 +40,14 @@ function formatItem(item: { body: string | null; meta_json: string | null; tags:
 
 function formatTable(rows: Record<string, unknown>[]): string {
   if (rows.length === 0) return "No rows found.";
-  const cols = Object.keys(rows[0]);
+  const cols = Object.keys(rows[0]!);
   const colWidths = cols.map((c) =>
     Math.max(c.length, ...rows.map((r) => String(r[c] ?? "").length)),
   );
   const sep = colWidths.map((w) => "-".repeat(w + 2)).join("+");
-  const header = cols.map((c, i) => c.padEnd(colWidths[i])).join(" | ");
+  const header = cols.map((c, i) => c.padEnd(colWidths[i]!)).join(" | ");
   const lines = rows.map((r) =>
-    cols.map((c, i) => String(r[c] ?? "").padEnd(colWidths[i])).join(" | "),
+    cols.map((c, i) => String(r[c] ?? "").padEnd(colWidths[i]!)).join(" | "),
   );
   return ` ${sep}\n| ${header} |\n ${sep}\n${lines.map((l) => `| ${l} |`).join("\n")}\n ${sep}`;
 }
@@ -322,7 +322,7 @@ function Terminal({ onClose, onDbChange, maxFolders = 999 }: TerminalProps) {
   const complete = useCallback(() => {
     const parts = input.split(/\s+/);
     if (parts.length === 1 && !input.includes(" ")) {
-      const partial = parts[0].toLowerCase();
+      const partial = parts[0]!.toLowerCase();
       const match = COMMANDS.find((c) => c.startsWith(partial));
       if (match) {
         setInput(match + " ");
@@ -375,7 +375,7 @@ function Terminal({ onClose, onDbChange, maxFolders = 999 }: TerminalProps) {
         {
           const idx = historyIndex === -1 ? commandHistory.length - 1 : Math.max(0, historyIndex - 1);
           setHistoryIndex(idx);
-          setInput(commandHistory[idx]);
+          setInput(commandHistory[idx] ?? "");
         }
         break;
       case "ArrowDown":
@@ -387,7 +387,7 @@ function Terminal({ onClose, onDbChange, maxFolders = 999 }: TerminalProps) {
         } else {
           const idx = historyIndex + 1;
           setHistoryIndex(idx);
-          setInput(commandHistory[idx]);
+          setInput(commandHistory[idx] ?? "");
         }
         break;
     }
@@ -397,6 +397,9 @@ function Terminal({ onClose, onDbChange, maxFolders = 999 }: TerminalProps) {
     <div
       className="window-content-inner terminal"
       ref={scrollRef}
+      role="log"
+      aria-label="Terminal output"
+      aria-live="polite"
       onClick={() => inputRef.current?.focus()}
     >
       <div className="terminal-output" style={{ userSelect: "text" }}>
@@ -422,6 +425,7 @@ function Terminal({ onClose, onDbChange, maxFolders = 999 }: TerminalProps) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
+          aria-label="Terminal input"
           style={{
             background: "transparent",
             border: "none",

@@ -1,0 +1,1 @@
+export const PROTECTED_IDS: readonly string[] = ["about", "projects", "blog", "github", "speaking", "terminal"];

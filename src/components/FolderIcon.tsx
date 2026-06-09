@@ -8,19 +8,24 @@ import {
   ClassicFile,
   ModernFile,
   TerminalFile,
+  PixelTerminal,
+  ClassicTerminal,
+  ModernTerminal,
+  TerminalTerminal,
 } from "./FolderSvgs";
 
 interface FolderIconProps {
   label: string;
-  type: "file" | "folder";
+  type: "file" | "folder" | "terminal";
   onDoubleClick: () => void;
+  onContextMenu: (e: React.MouseEvent) => void;
   theme: string;
   position: { x: number; y: number };
   onMove: (x: number, y: number) => void;
   onDrop: (x: number, y: number) => void;
 }
 
-function FolderIcon({ label, type, onDoubleClick, theme, position, onMove, onDrop }: FolderIconProps) {
+function FolderIcon({ label, type, onDoubleClick, onContextMenu, theme, position, onMove, onDrop }: FolderIconProps) {
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0, startPosX: 0, startPosY: 0 });
 
   const handleMouseDown = useCallback(
@@ -58,17 +63,23 @@ function FolderIcon({ label, type, onDoubleClick, theme, position, onMove, onDro
         theme === "classic" ? <ClassicFile /> :
         theme === "terminal" ? <TerminalFile /> :
         <ModernFile />
-      : theme === "pixel" ? <PixelFolder /> :
+      : type === "folder"
+      ? theme === "pixel" ? <PixelFolder /> :
         theme === "classic" ? <ClassicFolder /> :
         theme === "terminal" ? <TerminalFolder /> :
-        <ModernFolder />;
+        <ModernFolder />
+      : theme === "pixel" ? <PixelTerminal /> :
+        theme === "classic" ? <ClassicTerminal /> :
+        theme === "terminal" ? <TerminalTerminal /> :
+        <ModernTerminal />;
 
   return (
     <div
       className="desktop-icon"
-      style={{ left: position.x, top: position.y }}
+      style={{ left: position?.x ?? 0, top: position?.y ?? 0 }}
       onMouseDown={handleMouseDown}
       onDoubleClick={onDoubleClick}
+      onContextMenu={onContextMenu}
     >
       {svg}
       <span className="desktop-icon-label">{label}</span>

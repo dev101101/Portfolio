@@ -10,266 +10,47 @@ import {
   ModernFile,
   TerminalFile,
 } from "./FolderSvgs";
-import { getProjects } from "../data/db";
-
-interface ExplorerItem {
-  name: string;
-  type: "file" | "folder";
-  detail: ReactNode;
-  description?: string;
-}
+import { getSections, type PageItem } from "../data/db";
+import Folder from "./Folder";
+import File from "./File";
+import ContentPage from "./ContentPage";
+import type { FolderItem } from "./Folder";
 
 interface ExplorerSection {
   id: string;
   label: string;
-  type: "file" | "folder";
-  items?: ExplorerItem[];
+  type: "file" | "folder" | "terminal";
+  items: FolderItem[];
 }
 
-const SECTIONS: ExplorerSection[] = [
-  {
-    id: "about",
-    label: "About Me",
-    type: "file",
-  },
-  {
-    id: "projects",
-    label: "Projects",
-    type: "folder",
-    items: getProjects().map((p) => ({
-      name: p.name,
-      type: "file" as const,
-      description: p.description,
-      detail: (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div
-            style={{
-              padding: 16,
-              background: "var(--card-bg)",
-              border: "var(--card-border)",
-            }}
-          >
-            <h1 style={{ margin: 0, fontSize: 20 }}>{p.name}</h1>
-            <p style={{ margin: "4px 0 0", color: "var(--content-subtitle)", fontSize: "var(--font-size-sm)" }}>
-              {p.language}
-            </p>
-          </div>
+function buildItemsFrom(items: PageItem[]): FolderItem[] {
+  return items.map((item) => ({
+    name: item.title,
+    type: "file" as const,
+    description: item.description,
+    url: item.url,
+    detail: <ContentPage item={item} />,
+  }));
+}
 
-          <div
-            style={{
-              padding: 16,
-              background: "var(--card-bg)",
-              border: "var(--card-border)",
-              fontFamily: "var(--font-family)",
-              fontSize: "13px",
-              lineHeight: 1.7,
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            {p.readme
-              .split("\n")
-              .map((line, i) => {
-                if (line.startsWith("# ")) {
-                  return (
-                    <h2 key={i} style={{ margin: "16px 0 8px", fontSize: 16 }}>
-                      {line.slice(2)}
-                    </h2>
-                  );
-                }
-                if (line.startsWith("## ")) {
-                  return (
-                    <h3 key={i} style={{ margin: "14px 0 6px", fontSize: 14, color: "var(--accent)" }}>
-                      {line.slice(3)}
-                    </h3>
-                  );
-                }
-                if (line.startsWith("- ")) {
-                  return (
-                    <li key={i} style={{ marginLeft: 16, listStyle: "disc" }}>
-                      {line.slice(2)}
-                    </li>
-                  );
-                }
-                if (line.trim() === "") {
-                  return <br key={i} />;
-                }
-                return <p key={i} style={{ margin: 0 }}>{line}</p>;
-              })}
-          </div>
-
-          <div className="project-tech">
-            {p.topics.map((t) => (
-              <span key={t} className="tech-tag">{t}</span>
-            ))}
-          </div>
-        </div>
-      ),
-    })),
-  },
-  {
-    id: "blog",
-    label: "Blog",
-    type: "folder",
-    items: [
-      {
-        name: "Building an OS-like Portfolio",
-        type: "file",
-        detail: (
-          <>
-            <time className="blog-date">2026-05-20</time>
-            <h2>Building an OS-like Portfolio</h2>
-            <p>How I created a desktop experience in the browser with React</p>
-          </>
-        ),
-      },
-      {
-        name: "Rust for Web Developers",
-        type: "file",
-        detail: (
-          <>
-            <time className="blog-date">2026-04-10</time>
-            <h2>Rust for Web Developers</h2>
-            <p>A practical introduction to Rust from a TypeScript perspective</p>
-          </>
-        ),
-      },
-      {
-        name: "The Art of CLI Design",
-        type: "file",
-        detail: (
-          <>
-            <time className="blog-date">2026-03-01</time>
-            <h2>The Art of CLI Design</h2>
-            <p>Lessons learned from building command-line interfaces</p>
-          </>
-        ),
-      },
-      {
-        name: "Why I Love TypeScript",
-        type: "file",
-        detail: (
-          <>
-            <time className="blog-date">2026-01-15</time>
-            <h2>Why I Love TypeScript</h2>
-            <p>Type safety, developer experience, and productivity</p>
-          </>
-        ),
-      },
-    ],
-  },
-  {
-    id: "github",
-    label: "GitHub",
-    type: "folder",
-    items: [
-      {
-        name: "portfolio",
-        type: "folder",
-        detail: (
-          <>
-            <div className="repo-header">
-              <strong>portfolio</strong>
-              <span className="repo-stars">⭐ 42</span>
-            </div>
-            <p>OS-themed portfolio site</p>
-            <span className="repo-lang">TypeScript</span>
-          </>
-        ),
-      },
-      {
-        name: "cli-tools",
-        type: "folder",
-        detail: (
-          <>
-            <div className="repo-header">
-              <strong>cli-tools</strong>
-              <span className="repo-stars">⭐ 128</span>
-            </div>
-            <p>Collection of CLI utilities</p>
-            <span className="repo-lang">Rust</span>
-          </>
-        ),
-      },
-      {
-        name: "web-framework",
-        type: "folder",
-        detail: (
-          <>
-            <div className="repo-header">
-              <strong>web-framework</strong>
-              <span className="repo-stars">⭐ 89</span>
-            </div>
-            <p>Minimalist web framework</p>
-            <span className="repo-lang">TypeScript</span>
-          </>
-        ),
-      },
-      {
-        name: "dotfiles",
-        type: "folder",
-        detail: (
-          <>
-            <div className="repo-header">
-              <strong>dotfiles</strong>
-              <span className="repo-stars">⭐ 56</span>
-            </div>
-            <p>Personal dotfiles and config</p>
-            <span className="repo-lang">Shell</span>
-          </>
-        ),
-      },
-    ],
-  },
-  {
-    id: "speaking",
-    label: "Speaking",
-    type: "folder",
-    items: [
-      {
-        name: "Building for the Browser @ JSConf 2026",
-        type: "file",
-        detail: (
-          <>
-            <div className="talk-meta">
-              <span className="talk-event">JSConf 2026</span>
-              <span className="talk-date">June 2026</span>
-            </div>
-            <h2>Building for the Browser</h2>
-            <p>Modern strategies for building performant web applications</p>
-          </>
-        ),
-      },
-      {
-        name: "Rust in Production @ RustConf 2025",
-        type: "file",
-        detail: (
-          <>
-            <div className="talk-meta">
-              <span className="talk-event">RustConf 2025</span>
-              <span className="talk-date">Sept 2025</span>
-            </div>
-            <h2>Rust in Production</h2>
-            <p>Lessons from shipping Rust to production</p>
-          </>
-        ),
-      },
-      {
-        name: "CLI Design Patterns @ DevToolCon 2025",
-        type: "file",
-        detail: (
-          <>
-            <div className="talk-meta">
-              <span className="talk-event">DevToolCon 2025</span>
-              <span className="talk-date">Mar 2025</span>
-            </div>
-            <h2>CLI Design Patterns</h2>
-            <p>Designing command-line tools people love to use</p>
-          </>
-        ),
-      },
-    ],
-  },
-];
+function getExplorerSections(): ExplorerSection[] {
+  const raw = getSections();
+  if (raw.length === 0) return [];
+  return raw.map((s) => ({
+    id: s.id,
+    label: s.label,
+    type: s.type,
+    items:
+      s.id === "about"
+        ? s.items.map((item) => ({
+            name: item.title,
+            type: "file" as const,
+            description: item.description,
+            detail: <ContentPage item={item} />,
+          }))
+        : buildItemsFrom(s.items),
+  }));
+}
 
 interface FileExplorerProps {
   initialSection?: string;
@@ -279,25 +60,43 @@ interface FileExplorerProps {
   onOpenAbout?: () => void;
 }
 
-function FileExplorer({ initialSection, theme, onPathChange, onOpenFile, onOpenAbout }: FileExplorerProps) {
-  const FolderIcon = theme === "pixel" ? PixelFolder :
-    theme === "classic" ? ClassicFolder :
-    theme === "terminal" ? TerminalFolder :
-    ModernFolder;
+function FileExplorer({
+  initialSection,
+  theme,
+  onPathChange,
+  onOpenFile,
+  onOpenAbout,
+}: FileExplorerProps) {
+  const FolderIcon =
+    theme === "pixel"
+      ? PixelFolder
+      : theme === "classic"
+        ? ClassicFolder
+        : theme === "terminal"
+          ? TerminalFolder
+          : ModernFolder;
 
-  const FileIcon = theme === "pixel" ? PixelFile :
-    theme === "classic" ? ClassicFile :
-    theme === "terminal" ? TerminalFile :
-    ModernFile;
+  const FileIcon =
+    theme === "pixel"
+      ? PixelFile
+      : theme === "classic"
+        ? ClassicFile
+        : theme === "terminal"
+          ? TerminalFile
+          : ModernFile;
+
+  const sections = getExplorerSections();
 
   const initialSectionId =
-    initialSection && initialSection !== "about" && SECTIONS.some((s) => s.id === initialSection)
+    initialSection &&
+    initialSection !== "about" &&
+    sections.some((s) => s.id === initialSection)
       ? initialSection
-      : SECTIONS[0]?.id ?? "";
+      : (sections[0]?.id ?? "");
   const [selectedSection, setSelectedSection] = useState(initialSectionId);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
-  const section = SECTIONS.find((s) => s.id === selectedSection);
+  const section = sections.find((s) => s.id === selectedSection);
 
   useEffect(() => {
     if (selectedItem) {
@@ -317,14 +116,34 @@ function FileExplorer({ initialSection, theme, onPathChange, onOpenFile, onOpenA
     setSelectedItem(null);
   };
 
-  if (!section) return null;
+  if (!section) {
+    return (
+      <div className="explorer">
+        <div className="explorer-body">
+          <div className="explorer-sidebar">
+            {sections.map((s) => (
+              <div
+                key={s.id}
+                className={`explorer-sidebar-item${s.id === selectedSection ? " active" : ""}`}
+                onClick={() => handleSectionClick(s.id)}
+              >
+                {s.type === "folder" ? <FolderIcon /> : <FileIcon />}
+                <span>{s.label}</span>
+              </div>
+            ))}
+          </div>
+          <div className="explorer-content" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="explorer">
       <div className="explorer-body">
         {/* Sidebar */}
         <div className="explorer-sidebar">
-          {SECTIONS.map((s) => (
+          {sections.map((s) => (
             <div
               key={s.id}
               className={`explorer-sidebar-item${s.id === selectedSection ? " active" : ""}`}
@@ -339,40 +158,19 @@ function FileExplorer({ initialSection, theme, onPathChange, onOpenFile, onOpenA
         {/* Content panel */}
         <div className="explorer-content">
           {selectedItem ? (
-            <div className="window-content-inner">
-              <button className="filebrowser-back" onClick={() => setSelectedItem(null)}>
-                ← Back
-              </button>
-              {section.items?.find((i) => i.name === selectedItem)?.detail}
-            </div>
+            <File
+              detail={
+                section.items.find((i) => i.name === selectedItem)?.detail
+              }
+              onBack={() => setSelectedItem(null)}
+            />
           ) : (
-            <div className="window-content-inner">
-              <div className="filebrowser-list">
-                {section.items?.map((item) => (
-                  <div
-                    key={item.name}
-                    className="filebrowser-item"
-                    onDoubleClick={() => {
-                      if (item.type === "folder") {
-                        setSelectedItem(item.name);
-                      } else {
-                        onOpenFile?.(item.name, item.detail);
-                      }
-                    }}
-                  >
-                    {item.type === "folder" ? <FolderIcon /> : <FileIcon />}
-                    <div>
-                      <div className="filebrowser-item-name">{item.name}</div>
-                      {item.description && (
-                        <div style={{ fontSize: "var(--font-size-xs)", color: "var(--content-subtitle)", marginTop: 2 }}>
-                          {item.description}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <Folder
+              items={section.items}
+              theme={theme}
+              onOpenFile={onOpenFile}
+              onSelectFolder={(name) => setSelectedItem(name)}
+            />
           )}
         </div>
       </div>

@@ -11,7 +11,7 @@ export interface WindowState {
 export interface Folder {
   id: string;
   label: string;
-  type: "file" | "folder";
+  type: "file" | "folder" | "terminal";
 }
 
 export const FOLDERS: Folder[] = [
@@ -20,4 +20,5 @@ export const FOLDERS: Folder[] = [
   { id: "blog", label: "Blog", type: "folder" },
   { id: "github", label: "GitHub", type: "folder" },
   { id: "speaking", label: "Speaking", type: "folder" },
+  { id: "terminal", label: "Terminal", type: "terminal" },
 ];

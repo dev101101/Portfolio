@@ -84,12 +84,42 @@ function TerminalFolder() {
 function PixelFile() {
   return (
     <svg className="folder-svg" viewBox="0 0 24 24" fill="currentColor">
-      <rect x="4" y="2" width="16" height="20" fill="var(--file-body, #e8dcc8)" />
+      <rect
+        x="4"
+        y="2"
+        width="16"
+        height="20"
+        fill="var(--file-body, #e8dcc8)"
+      />
       <rect x="4" y="2" width="16" height="2" fill="var(--icon-color)" />
-      <rect x="4" y="4" width="12" height="2" fill="var(--file-fold, #d5ccb8)" />
-      <rect x="6" y="9" width="12" height="1" fill="var(--file-lines, rgba(0,0,0,0.2))" />
-      <rect x="6" y="12" width="8" height="1" fill="var(--file-lines, rgba(0,0,0,0.2))" />
-      <rect x="6" y="15" width="10" height="1" fill="var(--file-lines, rgba(0,0,0,0.2))" />
+      <rect
+        x="4"
+        y="4"
+        width="12"
+        height="2"
+        fill="var(--file-fold, #d5ccb8)"
+      />
+      <rect
+        x="6"
+        y="9"
+        width="12"
+        height="1"
+        fill="var(--file-lines, rgba(0,0,0,0.2))"
+      />
+      <rect
+        x="6"
+        y="12"
+        width="8"
+        height="1"
+        fill="var(--file-lines, rgba(0,0,0,0.2))"
+      />
+      <rect
+        x="6"
+        y="15"
+        width="10"
+        height="1"
+        fill="var(--file-lines, rgba(0,0,0,0.2))"
+      />
     </svg>
   );
 }
@@ -103,7 +133,12 @@ function ClassicFile() {
         stroke="#808080"
         strokeWidth="0.8"
       />
-      <path d="M15 2v4a1 1 0 0 0 1 1h4" fill="#e0e0e0" stroke="#808080" strokeWidth="0.5" />
+      <path
+        d="M15 2v4a1 1 0 0 0 1 1h4"
+        fill="#e0e0e0"
+        stroke="#808080"
+        strokeWidth="0.5"
+      />
       <rect x="6" y="10" width="11" height="1" fill="#c0c0c0" />
       <rect x="6" y="13" width="8" height="1" fill="#c0c0c0" />
       <rect x="6" y="16" width="10" height="1" fill="#c0c0c0" />
@@ -145,6 +180,106 @@ function TerminalFile() {
   );
 }
 
+/* ---- Terminal icons ---- */
+
+function PixelTerminal() {
+  return (
+    <svg className="folder-svg" viewBox="0 0 24 24" fill="currentColor">
+      <rect x="2" y="3" width="20" height="16" />
+      <rect x="2" y="3" width="20" height="3" />
+      <rect x="2" y="6" width="20" height="1" fill="rgba(0,0,0,0.15)" />
+      <rect x="2" y="19" width="20" height="2" />
+      <rect x="8" y="10" width="2" height="1" />
+      <rect x="10" y="10" width="2" height="1" />
+      <rect x="12" y="11" width="4" height="1" />
+      <rect x="8" y="13" width="6" height="1" />
+      <rect x="6" y="16" width="10" height="1" />
+    </svg>
+  );
+}
+
+function ClassicTerminal() {
+  return (
+    <svg className="folder-svg" viewBox="0 0 24 24">
+      <rect
+        x="2"
+        y="3"
+        width="20"
+        height="16"
+        rx="1"
+        fill="#c0c0c0"
+        stroke="#808080"
+        strokeWidth="0.8"
+      />
+      <rect
+        x="2"
+        y="3"
+        width="20"
+        height="3"
+        rx="0.5"
+        fill="#a0a0a0"
+        stroke="#808080"
+        strokeWidth="0.5"
+      />
+      <rect x="3" y="4" width="2" height="1" rx="0.5" fill="#808080" />
+      <rect x="6" y="4" width="1" height="1" rx="0.5" fill="#808080" />
+      <rect x="8" y="4" width="1" height="1" rx="0.5" fill="#808080" />
+      <rect x="18" y="4" width="3" height="1" rx="0.5" fill="#808080" />
+      <text
+        x="6"
+        y="15"
+        fontSize="7"
+        fill="#000"
+        fontFamily="monospace"
+        fontWeight="bold"
+      >{`>_`}</text>
+    </svg>
+  );
+}
+
+function ModernTerminal() {
+  return (
+    <svg className="folder-svg" viewBox="0 0 128 128">
+      <rect x="8" y="16" width="112" height="88" rx="6" fill="#2d2d2d" />
+      <rect x="8" y="16" width="112" height="12" rx="6" fill="#1a1a1a" />
+      <circle cx="22" cy="22" r="3" fill="#ff5f56" />
+      <circle cx="34" cy="22" r="3" fill="#ffbd2e" />
+      <circle cx="46" cy="22" r="3" fill="#27c93f" />
+      <rect x="16" y="104" width="96" height="4" rx="2" fill="#444" />
+      <text
+        x="16"
+        y="96"
+        fontSize="18"
+        fill="#00ff00"
+        fontFamily="monospace"
+        fontWeight="bold"
+      >
+        {`>_`}
+      </text>
+    </svg>
+  );
+}
+
+function TerminalTerminal() {
+  return (
+    <svg
+      className="folder-svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <rect x="2" y="4" width="20" height="15" rx="2" />
+      <rect x="2" y="4" width="20" height="3" rx="1" />
+      <circle cx="5.5" cy="5.5" r="0.8" fill="currentColor" stroke="none" />
+      <circle cx="8" cy="5.5" r="0.8" fill="currentColor" stroke="none" />
+      <circle cx="10.5" cy="5.5" r="0.8" fill="currentColor" stroke="none" />
+      <path d="M5 11l3 2-3 2" strokeWidth="1" />
+      <path d="M10 14h5" strokeWidth="1" />
+    </svg>
+  );
+}
+
 function FolderSmallSvg() {
   return (
     <svg className="filebrowser-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -171,6 +306,10 @@ export {
   ClassicFile,
   ModernFile,
   TerminalFile,
+  PixelTerminal,
+  ClassicTerminal,
+  ModernTerminal,
+  TerminalTerminal,
   FolderSmallSvg,
   FileSmallSvg,
 };

@@ -9,6 +9,7 @@ interface WindowProps {
   onMove: (x: number, y: number) => void;
   onResize: (w: number, h: number) => void;
   children: ReactNode;
+  navbar?: ReactNode;
 }
 
 function Window({
@@ -19,6 +20,7 @@ function Window({
   onMove,
   onResize,
   children,
+  navbar,
 }: WindowProps) {
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0, startPosX: 0, startPosY: 0 });
   const resizeRef = useRef({ resizing: false, startX: 0, startY: 0, startW: 0, startH: 0 });
@@ -115,6 +117,7 @@ function Window({
           <button className="win-btn close" onClick={onClose} title="Close" />
         </div>
       </div>
+      {navbar && <div className="window-navbar">{navbar}</div>}
       <div className="window-content">{children}</div>
       <div className="window-resize-handle" onMouseDown={handleResizeDown} />
     </div>

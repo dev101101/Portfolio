@@ -1648,43 +1648,47 @@ body,
 .about-dl-btn {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
-    padding: 1px 6px;
+    padding: 3px 10px;
     font-size: var(--font-size-xs);
     color: var(--accent);
     border: 1px solid var(--accent);
-    border-radius: 3px;
+    border-radius: 6px;
     text-decoration: none;
     cursor: pointer;
     white-space: nowrap;
     background: transparent;
     line-height: 1.4;
-    transition:
-        background 0.15s,
-        color 0.15s;
+    transition: all 0.2s ease;
 }
 
 .about-dl-btn:hover {
     background: var(--accent);
     color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
 }
 
+/* ----- Pixel ----- */
 [data-theme="pixel"] .about-dl-btn {
     border-radius: 0;
     border-width: 2px;
     font-family: var(--heading-font);
-    font-size: 9px;
+    font-size: 10px;
     text-transform: uppercase;
-    padding: 2px 8px;
+    padding: 2px 10px;
     transition: none;
+    letter-spacing: 1px;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
 }
 
 [data-theme="pixel"] .about-dl-btn:hover {
     background: var(--accent);
     color: #fff;
-    box-shadow: none;
+    box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
+    transform: translate(1px, 1px);
 }
 
+/* ----- Classic ----- */
 [data-theme="classic"] .about-dl-btn {
     border: 1px outset #ffffff;
     background: #c0c0c0;
@@ -1696,6 +1700,11 @@ body,
         inset 1px 1px 0 #fff,
         inset -1px -1px 0 #808080;
     transition: none;
+    font-weight: 600;
+}
+
+[data-theme="classic"] .about-dl-btn:hover {
+    background: #d4d4d4;
 }
 
 [data-theme="classic"] .about-dl-btn:active {
@@ -1703,6 +1712,7 @@ body,
     box-shadow: inset 1px 1px 0 #808080;
 }
 
+/* ----- Terminal ----- */
 [data-theme="terminal"] .about-dl-btn {
     border-radius: 0;
     border-color: #00ff00;
@@ -1710,12 +1720,28 @@ body,
     background: transparent;
     text-transform: none;
     transition: none;
+    position: relative;
+    padding: 2px 8px;
 }
 
 [data-theme="terminal"] .about-dl-btn:hover {
     background: #003300;
     color: #00ff00;
-    box-shadow: 0 0 4px rgba(0, 255, 0, 0.5);
+    box-shadow: 0 0 8px rgba(0, 255, 0, 0.4);
+}
+
+[data-theme="terminal"] .about-dl-btn::before {
+    content: "$ ";
+}
+
+[data-theme="terminal"] .about-dl-btn:hover::before {
+    animation: terminalBlink 1s step-end infinite;
+}
+
+@keyframes terminalBlink {
+    50% {
+        opacity: 0;
+    }
 }
 
 .skill-list {

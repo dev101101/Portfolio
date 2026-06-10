@@ -25,26 +25,14 @@ export function buildProfileDetail(profile: Profile): ReactNode {
       />
       <div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <h1 style={{ margin: 0 }}>{profile.name}</h1>
+          <h1 style={{ margin: 0, letterSpacing: 0, textWrap: "nowrap" }}>
+            {profile.name}
+          </h1>
           <a
             href="/resume.pdf"
             download
+            className="about-dl-btn"
             aria-label="Download resume as PDF"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 3,
-              padding: "1px 6px",
-              fontSize: "var(--font-size-xs)",
-              color: "var(--content-subtitle)",
-              border: "1px solid var(--content-subtitle)",
-              borderRadius: 3,
-              textDecoration: "none",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              background: "transparent",
-              lineHeight: 1.4,
-            }}
           >
             ⬇ PDF
           </a>

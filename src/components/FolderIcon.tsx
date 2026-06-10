@@ -23,19 +23,21 @@ interface FolderIconProps {
   position: { x: number; y: number };
   onMove: (x: number, y: number) => void;
   onDrop: (x: number, y: number) => void;
+  onDragStart?: () => void;
   isRenaming?: boolean;
   onRenameSubmit?: (label: string) => void;
   onRenameCancel?: () => void;
   inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
-function FolderIcon({ label, type, onDoubleClick, onContextMenu, theme, position, onMove, onDrop, isRenaming, onRenameSubmit, onRenameCancel, inputRef }: FolderIconProps) {
+function FolderIcon({ label, type, onDoubleClick, onContextMenu, theme, position, onMove, onDrop, isRenaming, onRenameSubmit, onRenameCancel, inputRef, onDragStart }: FolderIconProps) {
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0, startPosX: 0, startPosY: 0, moved: false });
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       if (isRenaming) return;
       e.preventDefault();
+      onDragStart?.();
       const el = dragRef.current;
       el.dragging = true;
       el.moved = false;
@@ -69,6 +71,7 @@ function FolderIcon({ label, type, onDoubleClick, onContextMenu, theme, position
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
       if (isRenaming) return;
+      onDragStart?.();
       const touch = e.touches[0]!;
       const el = dragRef.current;
       el.dragging = true;

@@ -1,22 +1,17 @@
-import type { ReactNode } from "react";
 import type { PageItem } from "../data/db";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
-function renderMarkdown(body: string): ReactNode[] {
-  return body.split("\n").map((line, i) => {
-    if (line.startsWith("# ")) {
-      return <h2 key={i} style={{ margin: "16px 0 8px", fontSize: 16 }}>{line.slice(2)}</h2>;
+function stripTitleHeading(body: string, title: string): string {
+  const lines = body.split("\n");
+  if (lines.length > 0 && lines[0]!.startsWith("# ") && lines[0]!.slice(2).trim() === title) {
+    const rest = lines.slice(1);
+    if (rest.length > 0 && rest[0]!.trim() === "") {
+      return `## Overview\n\n${rest.slice(1).join("\n")}`;
     }
-    if (line.startsWith("## ")) {
-      return <h3 key={i} style={{ margin: "14px 0 6px", fontSize: 14, color: "var(--accent)" }}>{line.slice(3)}</h3>;
-    }
-    if (line.startsWith("- ")) {
-      return <li key={i} style={{ marginLeft: 16, listStyle: "disc" }}>{line.slice(2)}</li>;
-    }
-    if (line.trim() === "") {
-      return <br key={i} />;
-    }
-    return <p key={i} style={{ margin: 0 }}>{line}</p>;
-  });
+    return `## Overview\n\n${rest.join("\n")}`;
+  }
+  return body;
 }
 
 interface ContentPageProps {
@@ -24,52 +19,61 @@ interface ContentPageProps {
 }
 
 function ContentPage({ item }: ContentPageProps) {
-  const parts: ReactNode[] = [];
+  const body = item.body ? stripTitleHeading(item.body, item.title) : "";
 
-  if (item.date && item.meta?.["event"]) {
-    parts.push(
-      <div key="talk-meta" className="talk-meta" style={{ marginBottom: 8 }}>
-        <span className="talk-event">{item.meta["event"]}</span>
-        <span className="talk-date" style={{ marginLeft: 12 }}>{item.date}</span>
-      </div>
-    );
-  } else if (item.date) {
-    parts.push(
-      <time key="date" className="blog-date">{item.date}</time>
-    );
-  }
+  return (
+    <div className="content-page" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {/* Meta header: event + date or just date */}
+      {item.date && item.meta?.["event"] && (
+        <div className="talk-meta" style={{ marginBottom: 4 }}>
+          <span className="talk-event">{item.meta["event"]}</span>
+          <span className="talk-date" style={{ marginLeft: 12 }}>{item.date}</span>
+        </div>
+      )}
+      {item.date && !item.meta?.["event"] && (
+        <time className="blog-date">{item.date}</time>
+      )}
 
-  if (item.title) {
-    parts.push(<h2 key="title">{item.title}</h2>);
-  }
+      {/* Title card */}
+      {item.title && (
+        <div className="content-title-card">
+          <h2 className="content-page-title">{item.title}</h2>
+          {item.description && (
+            <p className="content-page-desc">{item.description}</p>
+          )}
+          {item.meta?.["language"] && (
+            <span className="content-page-lang">{item.meta["language"]}</span>
+          )}
+        </div>
+      )}
 
-  if (item.meta?.["language"]) {
-    parts.push(
-      <p key="language" style={{ margin: "4px 0 12px", color: "var(--content-subtitle)", fontSize: "var(--font-size-sm)" }}>
-        {item.meta["language"]}
-      </p>
-    );
-  }
+      {/* Body */}
+      {body && (
+        <div className="content-body-card">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              h1: ({ children }) => <h2 className="content-heading">{children}</h2>,
+              h2: ({ children }) => <h3 className="content-subheading">{children}</h3>,
+              p: ({ children }) => <p className="content-text">{children}</p>,
+              li: ({ children }) => <li className="content-list-item">{children}</li>,
+            }}
+          >
+            {body}
+          </ReactMarkdown>
+        </div>
+      )}
 
-  if (item.body) {
-    parts.push(
-      <div key="body">
-        {renderMarkdown(item.body)}
-      </div>
-    );
-  }
-
-  if (item.tags && item.tags.length > 0) {
-    parts.push(
-      <div key="tags" className="project-tech" style={{ marginTop: 12 }}>
-        {item.tags.map((t) => (
-          <span key={t} className="tech-tag">{t}</span>
-        ))}
-      </div>
-    );
-  }
-
-  return <>{parts}</>;
+      {/* Tags */}
+      {item.tags && item.tags.length > 0 && (
+        <div className="content-tags">
+          {item.tags.map((t) => (
+            <span key={t} className="skill-tag">{t}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default ContentPage;

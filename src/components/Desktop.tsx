@@ -42,6 +42,8 @@ interface DesktopProps {
   onNewFolder: (id: string, label: string) => void;
   onNewFile: (id: string, label: string) => void;
   onRefresh: () => void;
+  onDropFileIntoFolder?: (fileSectionId: string, folderSectionId: string) => void;
+  onDropItemFromFolder?: (sectionId: string, itemName: string, x: number, y: number) => void;
 }
 
 type ContextMenuState =
@@ -49,7 +51,7 @@ type ContextMenuState =
   | { type: "desktop"; x: number; y: number }
   | null;
 
-function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSection, onNewFolder, onNewFile, onRefresh }: DesktopProps) {
+function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSection, onNewFolder, onNewFile, onRefresh, onDropFileIntoFolder, onDropItemFromFolder }: DesktopProps) {
   const [wallpaperLoaded, setWallpaperLoaded] = useState(() => !WALLPAPERS[theme]);
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>(() => {
     try {
@@ -97,13 +99,14 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
   }, []);
 
   const dropIcon = useCallback((id: string, x: number, y: number) => {
+    const target = snapToGrid(x, y);
+    const cols = getGridCols();
+    const rows = getGridRows();
+    if (target.col < 0 || target.col >= cols || target.row < 0 || target.row >= rows) {
+      return;
+    }
+
     setPositions((prev) => {
-      const target = snapToGrid(x, y);
-      const cols = getGridCols();
-      const rows = getGridRows();
-      if (target.col < 0 || target.col >= cols || target.row < 0 || target.row >= rows) {
-        return prev;
-      }
       const pixel = gridToPixel(target.col, target.row);
 
       const occupant = Object.entries(prev).find(([oid, pos]) => {
@@ -116,21 +119,22 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
         return { ...prev, [id]: pixel };
       }
 
-      const next = { ...prev, [id]: pixel };
       const [occId] = occupant;
-      const occTaken = Object.values(next);
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const free = gridToPixel(c, r);
-          if (!occTaken.some((t) => t.x === free.x && t.y === free.y)) {
-            next[occId] = free;
-            return next;
-          }
-        }
+
+      const dragged = folders.find((f) => f.id === id);
+      const occFolder = folders.find((f) => f.id === occId);
+      if (dragged && occFolder && dragged.type === "file" && dragged.id !== "about" && occFolder.type === "folder") {
+        setTimeout(() => onDropFileIntoFolder?.(id, occId), 0);
+        return prev;
       }
-      return next;
+
+      const origin = dragOriginRef.current;
+      const swapPixel = gridToPixel(origin.col, origin.row);
+      return { ...prev, [id]: pixel, [occId]: swapPixel };
     });
-  }, []);
+  }, [folders, onDropFileIntoFolder]);
+
+  const dragOriginRef = useRef({ col: 0, row: 0 });
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -186,11 +190,25 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
     closeContextMenu();
   }, [onNewFile, closeContextMenu]);
 
+  const handleDropFromFolder = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const raw = e.dataTransfer.getData("text/plain");
+    if (!raw) return;
+    try {
+      const { sectionId, itemName } = JSON.parse(raw);
+      if (!sectionId || !itemName) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      onDropItemFromFolder?.(sectionId, itemName, x, y);
+    } catch { /* ignore */ }
+  }, [onDropItemFromFolder]);
+
   return (
-    <div className="desktop" role="region" aria-label="Desktop" onContextMenu={handleDesktopContextMenu}>
-      <div key={theme} className={`desktop-wallpaper ${wallpaperLoaded ? "loaded" : ""}`} aria-hidden="true" />
+    <div className="desktop" role="region" aria-label="Desktop" onContextMenu={handleDesktopContextMenu} onDragOver={(e) => e.preventDefault()} onDrop={handleDropFromFolder}>
+      <div key={`wp-${theme}`} className={`desktop-wallpaper ${wallpaperLoaded ? "loaded" : ""}`} aria-hidden="true" />
       {WALLPAPERS[theme] && (
-        <img key={theme} src={WALLPAPERS[theme]!} onLoad={() => setWallpaperLoaded(true)} style={{ display: "none" }} alt="" />
+        <img key={`preload-${theme}`} src={WALLPAPERS[theme]!} onLoad={() => setWallpaperLoaded(true)} style={{ display: "none" }} alt="" />
       )}
       {folders.map((f) => {
         const p = allPositions[f.id] ?? { x: 0, y: 0 };
@@ -204,6 +222,7 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
             position={p}
             onMove={(x, y) => moveIcon(f.id, x, y)}
             onDrop={(x, y) => dropIcon(f.id, x, y)}
+            onDragStart={() => { dragOriginRef.current = snapToGrid(p.x, p.y); }}
             onDoubleClick={() => onOpenFolder(f.id)}
             onContextMenu={(e) => handleIconContextMenu(e, f.id)}
             isRenaming={isRenaming}

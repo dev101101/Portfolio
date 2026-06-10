@@ -13,12 +13,13 @@ import type { TextEditorHandle } from "./components/TextEditor";
 import FileNavbar from "./components/FileNavbar";
 import { buildProfileDetail } from "./components/buildProfileDetail";
 import { getProfile, getSections, initDbAsync, persistDb, initDb } from "./data/db";
-import { saveSection } from "./data/controllers/section";
-import { deleteSection } from "./data/models/section";
+import { saveSection, saveItem } from "./data/controllers/section";
+import { findItemsBySectionId, deleteSection, upsertItem, deleteItem } from "./data/models/section";
 import "./styles/App.css";
 
 function createWindow(id: string, title: string, zIndex: number): WindowState {
-  const w = 560;
+  const maxW = Math.min(560, window.innerWidth * 0.92);
+  const w = Math.max(280, maxW);
   const h = 400;
   return {
     id,
@@ -26,8 +27,8 @@ function createWindow(id: string, title: string, zIndex: number): WindowState {
     isOpen: true,
     isMinimized: false,
     position: {
-      x: Math.max(0, (window.innerWidth - w) / 2),
-      y: Math.max(0, (window.innerHeight - h - 40) / 2),
+      x: Math.max(8, (window.innerWidth - w) / 2),
+      y: Math.max(8, (window.innerHeight - h - 40) / 2),
     },
     size: { width: w, height: h },
     zIndex,
@@ -103,10 +104,13 @@ function App() {
   }, []);
 
   const basePos = useMemo(
-    () => ({
-      x: Math.max(0, (window.innerWidth - 560) / 2),
-      y: Math.max(0, (window.innerHeight - 400 - 40) / 2),
-    }),
+    () => {
+      const w = Math.min(560, window.innerWidth * 0.92);
+      return {
+        x: Math.max(8, (window.innerWidth - w) / 2),
+        y: Math.max(8, (window.innerHeight - 400 - 40) / 2),
+      };
+    },
     [],
   );
   const cascadeCount = useRef(0);
@@ -335,23 +339,101 @@ function App() {
     }
   }, []);
 
+  const uniqueLabel = useCallback((base: string): string => {
+    const existing = getSections().map((s) => s.label);
+    if (!existing.includes(base)) return base;
+    let n = 2;
+    while (existing.includes(`${base} ${n}`)) n++;
+    return `${base} ${n}`;
+  }, []);
+
   const onNewFolder = useCallback((id: string, label: string) => {
     const db = initDb();
     if (db) {
-      saveSection(db, { id, label, type: "folder" });
+      saveSection(db, { id, label: uniqueLabel(label), type: "folder" });
       persistDb();
       setRefreshKey((k) => k + 1);
     }
-  }, []);
+  }, [uniqueLabel]);
 
   const onNewFile = useCallback((id: string, label: string) => {
     const db = initDb();
     if (db) {
-      saveSection(db, { id, label, type: "file" });
+      saveSection(db, { id, label: uniqueLabel(label), type: "file" });
       persistDb();
       setRefreshKey((k) => k + 1);
     }
-  }, []);
+  }, [uniqueLabel]);
+
+  const onDropFileIntoFolder = useCallback((fileSectionId: string, folderSectionId: string) => {
+    const db = initDb();
+    if (!db) return;
+
+    const items = findItemsBySectionId(db, fileSectionId);
+    let n = 0;
+    for (const item of items) {
+      upsertItem(db, {
+        id: `${fileSectionId}-moved-${Date.now()}-${n}`,
+        section_id: folderSectionId,
+        title: item.title,
+        description: item.description ?? undefined,
+        date: item.date ?? undefined,
+        tags: item.tags ? JSON.parse(item.tags) : undefined,
+        body: item.body ?? undefined,
+        url: item.url ?? undefined,
+        meta: item.meta_json ? JSON.parse(item.meta_json) : undefined,
+        sort_order: item.sort_order,
+      });
+      n++;
+    }
+
+    deleteSection(db, fileSectionId);
+    persistDb();
+    onDbChange();
+
+    setWindows((prev) => {
+      const w = prev[fileSectionId];
+      if (!w) return prev;
+      return { ...prev, [fileSectionId]: { ...w, isOpen: false } };
+    });
+  }, [onDbChange]);
+
+  const onDropItemFromFolder = useCallback((sectionId: string, itemName: string, pixelX: number, pixelY: number) => {
+    const db = initDb();
+    if (!db) return;
+
+    const items = findItemsBySectionId(db, sectionId);
+    const item = items.find((i) => i.title === itemName);
+    if (!item) return;
+
+    const newId = `desktop-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const label = uniqueLabel(itemName);
+
+    saveSection(db, { id: newId, label, type: "file" });
+    saveItem(db, {
+      id: `item-${Date.now()}`,
+      section_id: newId,
+      title: item.title,
+      description: item.description ?? undefined,
+      date: item.date ?? undefined,
+      tags: item.tags ? JSON.parse(item.tags) : undefined,
+      body: item.body ?? undefined,
+      url: item.url ?? undefined,
+      meta: item.meta_json ? JSON.parse(item.meta_json) : undefined,
+      sort_order: 0,
+    });
+    deleteItem(db, item.id);
+    persistDb();
+
+    try {
+      const saved = localStorage.getItem("portfolio-desktop-positions");
+      const positions = saved ? JSON.parse(saved) : {};
+      positions[newId] = { x: Math.round(pixelX / 100) * 100, y: Math.round(pixelY / 110) * 110 };
+      localStorage.setItem("portfolio-desktop-positions", JSON.stringify(positions));
+    } catch { /* ignore */ }
+
+    onDbChange();
+  }, [uniqueLabel, onDbChange]);
 
   const handleSaveForever = useCallback((sectionId: string) => {
     editorRefs.current[sectionId]?.save();
@@ -367,7 +449,7 @@ function App() {
 
   return (
     <div className="app" role="application" aria-label="Portfolio Desktop">
-      <Desktop key={`desktop-${theme}-${refreshKey}`} folders={folders} theme={theme} onOpenFolder={openFolder} onRenameSection={onRenameSection} onDeleteSection={onDeleteSection} onNewFolder={onNewFolder} onNewFile={onNewFile} onRefresh={onDbChange} />
+      <Desktop key={`desktop-${theme}-${refreshKey}`} folders={folders} theme={theme} onOpenFolder={openFolder} onRenameSection={onRenameSection} onDeleteSection={onDeleteSection} onNewFolder={onNewFolder} onNewFile={onNewFile} onRefresh={onDbChange} onDropFileIntoFolder={onDropFileIntoFolder} onDropItemFromFolder={onDropItemFromFolder} />
       {windowList
         .filter((w) => w.isOpen)
         .map((w) => {
@@ -426,9 +508,7 @@ function App() {
                   onOpenAbout={() => openFolder("about")}
                 />
               ) : null}
-              {w.id.startsWith("file-") && (
-                <div className="window-content-inner">{fileContents[w.id]}</div>
-              )}
+              {w.id.startsWith("file-") && fileContents[w.id]}
             </Window>
           );
         })}

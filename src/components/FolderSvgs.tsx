@@ -40,12 +40,12 @@ function ModernFolder() {
         y1="-1106.802979"
         y2="-1106.802979"
       >
-        <stop offset="0" stop-color="#62a0ea" />
-        <stop offset="0.0576991" stop-color="#afd4ff" />
-        <stop offset="0.122204" stop-color="#62a0ea" />
-        <stop offset="0.873306" stop-color="#62a0ea" />
-        <stop offset="0.955997" stop-color="#c0d5ea" />
-        <stop offset="1" stop-color="#62a0ea" />
+        <stop offset="0" stopColor="#62a0ea" />
+        <stop offset="0.0576991" stopColor="#afd4ff" />
+        <stop offset="0.122204" stopColor="#62a0ea" />
+        <stop offset="0.873306" stopColor="#62a0ea" />
+        <stop offset="0.955997" stopColor="#c0d5ea" />
+        <stop offset="1" stopColor="#62a0ea" />
       </linearGradient>
       <path
         d="m 21.976562 12 c -5.527343 0 -9.976562 4.460938 -9.976562 10 v 86.03125 c 0 5.542969 4.449219 10 9.976562 10 h 84.042969 c 5.53125 0 9.980469 -4.457031 9.980469 -10 v -72.085938 c 0 -6.628906 -5.359375 -12 -11.972656 -12 h -46.027344 c -2.453125 0 -4.695312 -1.386718 -5.796875 -3.582031 l -1.503906 -2.992187 c -1.65625 -3.292969 -5.019531 -5.371094 -8.699219 -5.371094 z m 0 0"

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { WindowState } from "../types/desktop";
 import type { Theme } from "../types/themes";
 import Clock from "./Clock";
@@ -51,7 +51,67 @@ export default function Taskbar({
             </button>
           ))}
       </div>
+      <AppsButton
+        windows={windows}
+        onToggleMinimize={onToggleMinimize}
+        onFocus={onFocus}
+      />
       <Clock />
+    </div>
+  );
+}
+
+function AppsButton({
+  windows,
+  onToggleMinimize,
+  onFocus,
+}: {
+  windows: WindowState[];
+  onToggleMinimize: (id: string) => void;
+  onFocus: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const openWindows = useMemo(() => windows.filter((w) => w.isOpen), [windows]);
+
+  return (
+    <div className="taskbar-apps-wrapper">
+      {openWindows.length > 0 && (
+        <button
+          className="taskbar-apps"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={`${openWindows.length} open windows`}
+          aria-expanded={open}
+          aria-haspopup="menu"
+        >
+          Apps ({openWindows.length})
+        </button>
+      )}
+      {open && (
+        <>
+          <div className="apps-overlay" onClick={() => setOpen(false)} aria-hidden="true" />
+          <div className="apps-menu" role="menu" aria-label="Open windows">
+            {openWindows.map((w) => (
+              <button
+                key={w.id}
+                role="menuitem"
+                className={`apps-menu-item${w.isMinimized ? "" : " active"}`}
+                onClick={() => {
+                  if (w.isMinimized) {
+                    onToggleMinimize(w.id);
+                    onFocus(w.id);
+                  } else {
+                    onToggleMinimize(w.id);
+                  }
+                  setOpen(false);
+                }}
+              >
+                <span className="apps-menu-item-name">{w.title}</span>
+                <span className="apps-menu-item-desc">{w.isMinimized ? "Minimized" : "Active"}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

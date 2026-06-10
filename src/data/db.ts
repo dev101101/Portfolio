@@ -44,45 +44,42 @@ const SQL = await initSqlJs({
     const saved = loadDbFromStorage();
     const d = saved ? new SQL.Database(saved) : new SQL.Database();
     d.run("PRAGMA page_size = 4096");
-    if (!saved) {
-      d.run(`
-        CREATE TABLE IF NOT EXISTS profile (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          avatar TEXT NOT NULL,
-          name TEXT NOT NULL,
-          tagline TEXT NOT NULL,
-          bio TEXT NOT NULL,
-          skills TEXT NOT NULL
-        )
-      `);
-      d.run(`
-        CREATE TABLE IF NOT EXISTS sections (
-          id TEXT PRIMARY KEY,
-          label TEXT NOT NULL,
-          type TEXT NOT NULL CHECK(type IN ('file', 'folder', 'terminal')),
-          sort_order INTEGER NOT NULL DEFAULT 0
-        )
-      `);
-      d.run(`
-        CREATE TABLE IF NOT EXISTS items (
-          id TEXT PRIMARY KEY,
-          section_id TEXT NOT NULL REFERENCES sections(id) ON DELETE CASCADE,
-          title TEXT NOT NULL,
-          description TEXT,
-          date TEXT,
-          tags TEXT,
-          body TEXT,
-          url TEXT,
-          meta_json TEXT,
-          sort_order INTEGER NOT NULL DEFAULT 0
-        )
-      `);
-      const profile = getProfileCtrl(d);
-      if (!profile) {
-        seed(d);
+      if (!saved) {
+        d.run(`
+          CREATE TABLE IF NOT EXISTS profile (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            avatar TEXT NOT NULL,
+            name TEXT NOT NULL,
+            tagline TEXT NOT NULL,
+            bio TEXT NOT NULL,
+            skills TEXT NOT NULL
+          )
+        `);
+        d.run(`
+          CREATE TABLE IF NOT EXISTS sections (
+            id TEXT PRIMARY KEY,
+            label TEXT NOT NULL,
+            type TEXT NOT NULL CHECK(type IN ('file', 'folder', 'terminal')),
+            sort_order INTEGER NOT NULL DEFAULT 0
+          )
+        `);
+        d.run(`
+          CREATE TABLE IF NOT EXISTS items (
+            id TEXT PRIMARY KEY,
+            section_id TEXT NOT NULL REFERENCES sections(id) ON DELETE CASCADE,
+            title TEXT NOT NULL,
+            description TEXT,
+            date TEXT,
+            tags TEXT,
+            body TEXT,
+            url TEXT,
+            meta_json TEXT,
+            sort_order INTEGER NOT NULL DEFAULT 0
+          )
+        `);
       }
+      seed(d);
       saveDbToStorage(d);
-    }
     db = d;
     return d;
   })();

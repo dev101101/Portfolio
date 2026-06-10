@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import type { ReactNode } from "react";
 import {
   PixelFolder,
@@ -23,9 +24,11 @@ interface FolderProps {
   theme: string;
   onOpenFile?: (title: string, detail: ReactNode) => void;
   onSelectFolder?: (name: string) => void;
+  sectionId?: string;
+  dragDisabled?: boolean;
 }
 
-function Folder({ items, theme, onOpenFile, onSelectFolder }: FolderProps) {
+function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisabled }: FolderProps) {
   const FolderIcon = theme === "pixel" ? PixelFolder :
     theme === "classic" ? ClassicFolder :
     theme === "terminal" ? TerminalFolder :
@@ -36,15 +39,23 @@ function Folder({ items, theme, onOpenFile, onSelectFolder }: FolderProps) {
     theme === "terminal" ? TerminalFile :
     ModernFile;
 
+  const handleDragStart = useCallback((e: React.DragEvent, itemName: string) => {
+    if (!sectionId) return;
+    e.dataTransfer.setData("text/plain", JSON.stringify({ sectionId, itemName }));
+    e.dataTransfer.effectAllowed = "move";
+  }, [sectionId]);
+
   return (
     <div className="window-content-inner">
       <div className="filebrowser-list" role="list">
-        {items.map((item) => (
+        {items.map((item, index) => (
           <div
-            key={item.name}
+            key={`${item.name}-${index}`}
             className="filebrowser-item"
             role="listitem"
             tabIndex={0}
+            draggable={!!sectionId && !dragDisabled}
+            onDragStart={(e) => handleDragStart(e, item.name)}
             onDoubleClick={() => {
               if (item.url) {
                 window.open(item.url, "_blank");

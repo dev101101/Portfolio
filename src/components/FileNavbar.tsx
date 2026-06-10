@@ -5,8 +5,8 @@ interface FileNavbarProps {
   onPreview: () => void;
   previewing: boolean;
   onSelectAll: () => void;
-  onSaveForever: () => void;
-  onOpenHelp: () => void;
+  onSaveForever?: () => void;
+  onOpenHelp?: () => void;
 }
 
 interface MenuItem {
@@ -70,28 +70,32 @@ function MenuDropdown({ items, onClose }: { items: MenuItem[]; onClose: () => vo
 function FileNavbar({ onSave, onPreview, previewing, onSelectAll, onSaveForever, onOpenHelp }: FileNavbarProps) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
+  const fileItems: MenuItem[] = [
+    { label: "Save", shortcut: "Ctrl+S", onClick: onSave },
+    { label: previewing ? "Edit" : "Preview", onClick: onPreview },
+  ];
+  if (onSaveForever) {
+    fileItems.push({ label: "Save Forever", onClick: onSaveForever });
+  }
+
   const menus: { label: string; items: MenuItem[] }[] = [
-    {
-      label: "File",
-      items: [
-        { label: "Save", shortcut: "Ctrl+S", onClick: onSave },
-        { label: previewing ? "Edit" : "Preview", onClick: onPreview },
-        { label: "Save Forever", onClick: onSaveForever },
-      ],
-    },
+    { label: "File", items: fileItems },
     {
       label: "Selection",
       items: [
         { label: "Select All", shortcut: "Ctrl+A", onClick: onSelectAll },
       ],
     },
-    {
+  ];
+
+  if (onOpenHelp) {
+    menus.push({
       label: "Help",
       items: [
         { label: "About Text Editor", onClick: onOpenHelp },
       ],
-    },
-  ];
+    });
+  }
 
   return (
     <div className="menubar" role="menubar">

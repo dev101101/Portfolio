@@ -3,6 +3,7 @@ import type { WindowState } from "../types/desktop";
 
 interface WindowProps {
   win: WindowState;
+  isActive?: boolean;
   onClose: () => void;
   onMinimize: () => void;
   onFocus: () => void;
@@ -14,6 +15,7 @@ interface WindowProps {
 
 function Window({
   win,
+  isActive,
   onClose,
   onMinimize,
   onFocus,
@@ -157,7 +159,7 @@ function Window({
 
   return (
     <div
-      className={`window${resizing ? " resizing" : ""}`}
+      className={`window${resizing ? " resizing" : ""}${isActive ? " active" : ""}`}
       role="dialog"
       aria-label={win.title}
       style={{

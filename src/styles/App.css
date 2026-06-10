@@ -27,6 +27,7 @@
     --window-shadow: 6px 6px 0 rgba(0, 0, 0, 0.4);
     --window-radius: 0;
     --window-title-bg: linear-gradient(90deg, #2c3e50, #34495e);
+    --window-title-bg-active: linear-gradient(90deg, #3d5a80, #4a6fa5);
     --window-title-text: #e8dcc8;
     --window-title-font: "Press Start 2P", monospace;
     --window-title-size: 9px;
@@ -102,6 +103,7 @@
     --window-shadow: none;
     --window-radius: 0;
     --window-title-bg: linear-gradient(90deg, #000080, #1084d0);
+    --window-title-bg-active: linear-gradient(90deg, #0000c0, #3094e0);
     --window-title-text: #ffffff;
     --window-title-font: "MS Sans Serif", system-ui, sans-serif;
     --window-title-size: 12px;
@@ -179,6 +181,7 @@
     --window-radius: 0.5rem;
     --window-radius-top: 0.6rem;
     --window-title-bg: linear-gradient(180deg, #4a6fa5, #2c4a7c);
+    --window-title-bg-active: linear-gradient(180deg, #5a7fb5, #3a5a8c);
     --window-title-text: #fff;
     --window-title-font: "Segoe UI", system-ui, sans-serif;
     --window-title-size: 12px;
@@ -254,6 +257,7 @@
     --window-shadow: 0 0 16px rgba(0, 255, 0, 0.15);
     --window-radius: 0;
     --window-title-bg: #0a0a0a;
+    --window-title-bg-active: #141414;
     --window-title-text: #00ff00;
     --window-title-font: "Share Tech Mono", monospace;
     --window-title-size: 12px;
@@ -576,6 +580,10 @@ body,
     flex-shrink: 0;
     border-top-left-radius: var(--window-radius);
     border-top-right-radius: var(--window-radius);
+}
+
+.window.active .window-titlebar {
+    background: var(--window-title-bg-active);
 }
 
 .window-navbar {

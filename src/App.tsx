@@ -446,6 +446,7 @@ function App() {
   }, []);
 
   const windowList = Object.values(windows);
+  const maxZ = Math.max(...windowList.filter((w) => w.isOpen).map((w) => w.zIndex), 0);
 
   return (
     <div className="app" role="application" aria-label="Portfolio Desktop">
@@ -473,6 +474,7 @@ function App() {
             <Window
               key={w.id}
               win={w}
+              isActive={w.zIndex === maxZ}
               navbar={fileNavbar}
               onClose={() => closeWindow(w.id)}
               onMinimize={() => minimizeWindow(w.id)}

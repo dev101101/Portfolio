@@ -73,7 +73,7 @@ interface ExplorerSection {
 }
 
 function buildItemsFrom(items: PageItem[], sectionId: string): FolderItem[] {
-  const isProtected = PROTECTED_IDS.includes(sectionId as any);
+  const isProtected = PROTECTED_IDS.includes(sectionId);
   return items.map((item) => ({
     name: item.title,
     type: (item.meta?.["itemType"] as "file" | "folder" | undefined) ?? "file",
@@ -161,11 +161,10 @@ function FileExplorer({
 
   const [staticSections] = useState<ExplorerSection[]>(() => getExplorerSections());
   const [blogItems, setBlogItems] = useState<FolderItem[] | null>(null);
-  const [blogLoading, setBlogLoading] = useState(false);
+  const [blogLoading, setBlogLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    setBlogLoading(true);
     fetchBlogList()
       .then((articles) => {
         if (cancelled) return;
@@ -285,7 +284,7 @@ function FileExplorer({
               onOpenFile={onOpenFile}
               onSelectFolder={(name) => setSelectedItem(name)}
               sectionId={section.id}
-              dragDisabled={PROTECTED_IDS.includes(section.id as any)}
+              dragDisabled={PROTECTED_IDS.includes(section.id)}
             />
           )}
         </div>

@@ -24,19 +24,48 @@ export function buildProfileDetail(profile: Profile): ReactNode {
         style={{ width: 80, height: 80, flexShrink: 0 }}
       />
       <div>
-        <h1 style={{ margin: 0 }}>{profile.name}</h1>
-        <p className="about-subtitle" style={{ marginTop: 2 }}>{profile.tagline}</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <h1 style={{ margin: 0 }}>{profile.name}</h1>
+          <a
+            href="/resume.pdf"
+            download
+            aria-label="Download resume as PDF"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 3,
+              padding: "1px 6px",
+              fontSize: "var(--font-size-xs)",
+              color: "var(--content-subtitle)",
+              border: "1px solid var(--content-subtitle)",
+              borderRadius: 3,
+              textDecoration: "none",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              background: "transparent",
+              lineHeight: 1.4,
+            }}
+          >
+            ⬇ PDF
+          </a>
+        </div>
+        <p className="about-subtitle" style={{ marginTop: 2 }}>
+          {profile.tagline}
+        </p>
       </div>
-    </div>
+    </div>,
   );
 
   if (profile.bio) {
     parts.push(
-      <div key="bio" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div
+        key="bio"
+        style={{ display: "flex", flexDirection: "column", gap: 12 }}
+      >
         {profile.bio.split("\n\n").map((p, i) => (
           <p key={i}>{p}</p>
         ))}
-      </div>
+      </div>,
     );
   }
 
@@ -46,10 +75,12 @@ export function buildProfileDetail(profile: Profile): ReactNode {
         <h2 style={{ marginTop: 0 }}>Skills</h2>
         <div className="skill-list">
           {profile.skills.map((skill) => (
-            <span key={skill} className="skill-tag">{skill}</span>
+            <span key={skill} className="skill-tag">
+              {skill}
+            </span>
           ))}
         </div>
-      </section>
+      </section>,
     );
   }
 

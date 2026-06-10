@@ -1645,6 +1645,79 @@ body,
     font-size: var(--font-size-sm);
 }
 
+.about-dl-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 6px;
+    font-size: var(--font-size-xs);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    background: transparent;
+    line-height: 1.4;
+    transition:
+        background 0.15s,
+        color 0.15s;
+}
+
+.about-dl-btn:hover {
+    background: var(--accent);
+    color: #fff;
+}
+
+[data-theme="pixel"] .about-dl-btn {
+    border-radius: 0;
+    border-width: 2px;
+    font-family: var(--heading-font);
+    font-size: 9px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    transition: none;
+}
+
+[data-theme="pixel"] .about-dl-btn:hover {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: none;
+}
+
+[data-theme="classic"] .about-dl-btn {
+    border: 1px outset #ffffff;
+    background: #c0c0c0;
+    color: #000;
+    border-radius: 0;
+    font-size: 11px;
+    padding: 1px 8px;
+    box-shadow:
+        inset 1px 1px 0 #fff,
+        inset -1px -1px 0 #808080;
+    transition: none;
+}
+
+[data-theme="classic"] .about-dl-btn:active {
+    border-style: inset;
+    box-shadow: inset 1px 1px 0 #808080;
+}
+
+[data-theme="terminal"] .about-dl-btn {
+    border-radius: 0;
+    border-color: #00ff00;
+    color: #00ff00;
+    background: transparent;
+    text-transform: none;
+    transition: none;
+}
+
+[data-theme="terminal"] .about-dl-btn:hover {
+    background: #003300;
+    color: #00ff00;
+    box-shadow: 0 0 4px rgba(0, 255, 0, 0.5);
+}
+
 .skill-list {
     display: flex;
     flex-wrap: wrap;

@@ -24,11 +24,23 @@ function Window({
   children,
   navbar,
 }: WindowProps) {
-  const dragRef = useRef({ dragging: false, startX: 0, startY: 0, startPosX: 0, startPosY: 0 });
-  const resizeRef = useRef({ resizing: false, startX: 0, startY: 0, startW: 0, startH: 0 });
+  const dragRef = useRef({
+    dragging: false,
+    startX: 0,
+    startY: 0,
+    startPosX: 0,
+    startPosY: 0,
+  });
+  const resizeRef = useRef({
+    resizing: false,
+    startX: 0,
+    startY: 0,
+    startW: 0,
+    startH: 0,
+  });
   const [resizing, setResizing] = useState(false);
   const [maximized, setMaximized] = useState(false);
-  const savedRef = useRef({ x: 0, y: 0, w: 560, h: 400 });
+  const savedRef = useRef({ x: 0, y: 0, w: 580, h: 400 });
 
   const toggleMaximize = useCallback(() => {
     if (maximized) {
@@ -36,7 +48,12 @@ function Window({
       onResize(savedRef.current.w, savedRef.current.h);
       setMaximized(false);
     } else {
-      savedRef.current = { x: win.position.x, y: win.position.y, w: win.size.width, h: win.size.height };
+      savedRef.current = {
+        x: win.position.x,
+        y: win.position.y,
+        w: win.size.width,
+        h: win.size.height,
+      };
       onMove(0, 0);
       onResize(window.innerWidth, window.innerHeight - 40);
       setMaximized(true);
@@ -55,7 +72,10 @@ function Window({
 
       const onDrag = (ev: MouseEvent) => {
         if (!el.dragging) return;
-        onMove(el.startPosX + ev.clientX - el.startX, el.startPosY + ev.clientY - el.startY);
+        onMove(
+          el.startPosX + ev.clientX - el.startX,
+          el.startPosY + ev.clientY - el.startY,
+        );
       };
       const onUp = () => {
         el.dragging = false;
@@ -82,7 +102,10 @@ function Window({
       const onDrag = (ev: TouchEvent) => {
         if (!el.dragging) return;
         const t = ev.touches[0]!;
-        onMove(el.startPosX + t.clientX - el.startX, el.startPosY + t.clientY - el.startY);
+        onMove(
+          el.startPosX + t.clientX - el.startX,
+          el.startPosY + t.clientY - el.startY,
+        );
       };
       const onUp = () => {
         el.dragging = false;
@@ -179,14 +202,33 @@ function Window({
       >
         <span className="window-title">{win.title}</span>
         <div className="window-controls">
-          <button className="win-btn minimize" onClick={onMinimize} title="Minimize" aria-label="Minimize window" />
-          <button className="win-btn maximize" onClick={toggleMaximize} title={maximized ? "Restore" : "Maximize"} aria-label={maximized ? "Restore window" : "Maximize window"} />
-          <button className="win-btn close" onClick={onClose} title="Close" aria-label="Close window" />
+          <button
+            className="win-btn minimize"
+            onClick={onMinimize}
+            title="Minimize"
+            aria-label="Minimize window"
+          />
+          <button
+            className="win-btn maximize"
+            onClick={toggleMaximize}
+            title={maximized ? "Restore" : "Maximize"}
+            aria-label={maximized ? "Restore window" : "Maximize window"}
+          />
+          <button
+            className="win-btn close"
+            onClick={onClose}
+            title="Close"
+            aria-label="Close window"
+          />
         </div>
       </div>
       {navbar && <div className="window-navbar">{navbar}</div>}
       <div className="window-content">{children}</div>
-      <div className="window-resize-handle" onMouseDown={handleResizeDown} onTouchStart={handleResizeTouchStart} />
+      <div
+        className="window-resize-handle"
+        onMouseDown={handleResizeDown}
+        onTouchStart={handleResizeTouchStart}
+      />
     </div>
   );
 }

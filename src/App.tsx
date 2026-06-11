@@ -18,7 +18,7 @@ import { findItemsBySectionId, deleteSection, upsertItem, deleteItem } from "./d
 import "./styles/App.css";
 
 function createWindow(id: string, title: string, zIndex: number): WindowState {
-  const maxW = Math.min(560, window.innerWidth * 0.92);
+  const maxW = Math.min(580, window.innerWidth * 0.92);
   const w = Math.max(280, maxW);
   const h = 400;
   return {
@@ -105,7 +105,7 @@ function App() {
 
   const basePos = useMemo(
     () => {
-      const w = Math.min(560, window.innerWidth * 0.92);
+      const w = Math.min(580, window.innerWidth * 0.92);
       return {
         x: Math.max(8, (window.innerWidth - w) / 2),
         y: Math.max(8, (window.innerHeight - 400 - 40) / 2),

@@ -24,8 +24,22 @@ export function buildProfileDetail(profile: Profile): ReactNode {
         style={{ width: 80, height: 80, flexShrink: 0 }}
       />
       <div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <h1 style={{ margin: 0, letterSpacing: 0, textWrap: "nowrap" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            width: "100%",
+          }}
+        >
+          <h1
+            style={{
+              margin: 0,
+              letterSpacing: 0,
+              width: "100%",
+              fontSize: "auto",
+            }}
+          >
             {profile.name}
           </h1>
           <a

@@ -5,22 +5,19 @@ import { upsertSection, upsertItem } from "./models/section";
 export function seed(db: Database) {
   upsertProfile(db, {
     avatar: "https://avatars.githubusercontent.com/u/170589535",
-    name: "Hey, I'm Diego!",
-    tagline: "Software Engineer & Creator",
-    bio: `I am a Software Engineer with a solid track record of building scalable and efficient applications since 2022. My core ecosystem is built on Node.js, where I architect robust server-side logic and manage relational databases such as MySQL and SQLite. On the client side, I have extensive experience using React to develop dynamic and interactive user interfaces.
-
-Currently, I am dedicated to deepening my expertise in backend services, optimizing data handling, and refining business logic. I am passionate about solving complex infrastructure challenges and am actively seeking new professional opportunities where I can contribute to high-performance backend systems.
-
-Beyond the terminal, I am an enthusiast of Pixel Art. This hobby allows me to merge my love for technology with visual creativity, a discipline I occasionally showcase through my social media pieces.`,
-    skills: ["TypeScript", "React", "Node.js", "Rust", "Python", "Go", "PostgreSQL", "Docker"],
+    name: "Diego Felix Amachi Flores",
+    tagline: "Software Engineer",
+    bio: `Software Engineer specializing in scalable backend systems and modern web applications, with extensive experience developing solutions using Node.js, TypeScript, and React alongside relational databases such as PostgreSQL, MySQL, and SQLite. My work centers on automating business processes through AI-powered solutions for small enterprises, combining backend engineering with user-focused application design. I have experience integrating large language models, optimizing context management and token efficiency, and building reliable development workflows with Git, LazyGit, and Arch Linux.`,
+    skills: ["TypeScript", "JavaScript", "Rust", "Java", "SQL", "Node.js", "Express", "React", "Vite", "PostgreSQL", "MySQL", "SQLite", "Git", "Arch Linux"],
   });
 
   const sections = [
-    { id: "about", label: "About Me", type: "file" as const, sort_order: 0 },
-    { id: "projects", label: "Projects", type: "folder" as const, sort_order: 1 },
-    { id: "blog", label: "Blog", type: "folder" as const, sort_order: 2 },
-    { id: "github", label: "GitHub", type: "folder" as const, sort_order: 3 },
-    { id: "speaking", label: "Speaking", type: "folder" as const, sort_order: 4 },
+    { id: "docs", label: "Docs", type: "file" as const, sort_order: 0 },
+    { id: "about", label: "About Me", type: "file" as const, sort_order: 1 },
+    { id: "projects", label: "Projects", type: "folder" as const, sort_order: 2 },
+    { id: "blog", label: "Blog", type: "folder" as const, sort_order: 3 },
+    { id: "github", label: "GitHub", type: "folder" as const, sort_order: 4 },
+    { id: "speaking", label: "Speaking", type: "folder" as const, sort_order: 5 },
   ];
 
   for (const s of sections) {
@@ -29,70 +26,228 @@ Beyond the terminal, I am an enthusiast of Pixel Art. This hobby allows me to me
 
   upsertItem(db, {
     id: "about-profile", section_id: "about", title: "Profile", description: "Avatar and tagline", sort_order: 0,
-    meta: { avatarUrl: "https://avatars.githubusercontent.com/u/170589535", name: "Hey, I'm Diego!", tagline: "Software Engineer & Creator" },
+    meta: { avatarUrl: "https://avatars.githubusercontent.com/u/170589535", name: "Diego Felix Amachi Flores", tagline: "Software Engineer" },
   });
   upsertItem(db, {
-    id: "about-bio", section_id: "about", title: "Bio", description: "Full biography", body: `I am a Software Engineer with a solid track record of building scalable and efficient applications since 2022. My core ecosystem is built on Node.js, where I architect robust server-side logic and manage relational databases such as MySQL and SQLite. On the client side, I have extensive experience using React to develop dynamic and interactive user interfaces.
-
-Currently, I am dedicated to deepening my expertise in backend services, optimizing data handling, and refining business logic. I am passionate about solving complex infrastructure challenges and am actively seeking new professional opportunities where I can contribute to high-performance backend systems.
-
-Beyond the terminal, I am an enthusiast of Pixel Art. This hobby allows me to merge my love for technology with visual creativity, a discipline I occasionally showcase through my social media pieces.`, sort_order: 1,
+    id: "about-bio", section_id: "about", title: "Bio", description: "Full biography", body: `Software Engineer specializing in scalable backend systems and modern web applications, with extensive experience developing solutions using Node.js, TypeScript, and React alongside relational databases such as PostgreSQL, MySQL, and SQLite. My work centers on automating business processes through AI-powered solutions for small enterprises, combining backend engineering with user-focused application design. I have experience integrating large language models, optimizing context management and token efficiency, and building reliable development workflows with Git, LazyGit, and Arch Linux.`, sort_order: 1,
   });
   upsertItem(db, {
     id: "about-skills", section_id: "about", title: "Skills", description: "Technologies and tools", sort_order: 2,
-    tags: ["TypeScript", "React", "Node.js", "Rust", "Python", "Go", "PostgreSQL", "Docker"],
+    tags: ["TypeScript", "JavaScript", "Rust", "Java", "SQL", "Node.js", "Express", "React", "Vite", "PostgreSQL", "MySQL", "SQLite", "Git", "Arch Linux", "REST APIs", "LLM Integration"],
   });
 
   upsertItem(db, {
-    id: "proj-contab", section_id: "projects", title: "Contab", description: "Automation of purchase and sale invoice registration for accounting", sort_order: 0,
-    tags: ["accounting", "invoicing", "SMEs"],
-    meta: { language: "TypeScript" },
-    body: `# Contab
+    id: "docs-guide", section_id: "docs", title: "User Guide", description: "Complete documentation for Portfolio OS", sort_order: 0,
+    body: `[title: Portfolio OS — User Guide]
+[description: Complete documentation for the interactive portfolio desktop simulator]
+[tags: help, guide, documentation, portfolio]
 
-System to transfer purchase and sale documents to an accounting program.
+# Portfolio OS — User Guide
 
-Automates the registration of purchase and sale invoices and receipts, eliminating manual data entry and reducing errors in daily accounting.
+Welcome to Portfolio OS, a desktop-simulator portfolio that showcases projects, blog posts, and talks through a fully interactive operating-system-like interface.
 
-## Features
-- Automated registration of purchase and sale invoices
-- Direct transfer to accounting programs
-- Reduction of human errors in data entry
-- Simple interface for small businesses`,
+---
+
+## 🖥️ Desktop
+
+The desktop is your main workspace. It displays icons for every section: **About Me**, **Projects**, **Blog**, **GitHub**, **Speaking**, and **Docs**.
+
+### Basic actions
+- **Double-click** an icon → opens that section's window
+- **Right-click** an icon → **Open**, **Rename**, **Delete** (protected sections cannot be deleted)
+- **Right-click** empty space → **New Folder**, **New File**, **Refresh**
+- **Drag & drop** icons to rearrange them on the grid
+- **Rename inline** — type directly below the icon, Enter to confirm, Escape to cancel
+- **Drag an icon onto a folder** → moves it into that folder (on desktop, icons rearranged)
+
+### Protected sections
+**About Me**, **Projects**, **Blog**, **GitHub**, **Speaking**, and **Docs** cannot be deleted, renamed, or moved into folders. They always open with a rich card-layout view (ContentPage).
+
+---
+
+## 📂 File Explorer
+
+Opens when you double-click a folder section or press the **Apps** button in the taskbar.
+
+### Sidebar
+Lists all sections on the left. Click a section to show its contents in the right panel. The active section is highlighted.
+
+### Content area
+Shows items inside the selected section:
+- **📁** folders and **📄** files
+- **Double-click** an item → opens it (folders navigate in, files open in the Text Editor)
+- **Right-click** an item → **Open** or **Delete**
+- **Drag** items onto folders to move them into nested folders
+
+### Breadcrumb
+When inside a subfolder, a **← Back** button appears at the top. Click it to return to the parent folder.
+
+### Creating items
+Right-click empty space in the content area → **New File** or **New Folder**. A new entry appears inline with an icon + editable name. Enter confirms, Escape cancels.
+
+---
+
+## ✏️ Text Editor
+
+Opens when you double-click a file in the File Explorer. Files open in **Preview** mode (rendered markdown) by default.
+
+### FileNavbar menus
+
+| Menu | Action | Shortcut |
+|------|--------|----------|
+| **File → Save** | Saves content to the database | \`Ctrl+S\` |
+| **File → Preview / Edit** | Toggles between rendered preview and raw textarea | |
+| **File → Save Forever** | Saves and locks the file as read-only | |
+| **Selection → Select All** | Selects all text in the editor | \`Ctrl+A\` |
+| **Help → About Text Editor** | Shows this editor reference | |
+
+### Directives
+Write these at the top of your file to add metadata:
+
+\`\`\`
+[title: Section Title]
+[description: Short description...]
+[tags: tag1, tag2]
+[meta: key=value]
+\`\`\`
+
+### Markdown support
+All GitHub-Flavored Markdown is supported in Preview mode:
+- **Headings**: \`# h1\` → \`###### h6\`
+- **Emphasis**: \`**bold**\`, \`*italic*\`, \`~~strikethrough~~\`
+- **Lists**: \`- item\` (unordered), \`1. item\` (ordered)
+- **Links**: \`[text](url)\`, **Images**: \`![alt](src)\`
+- **Code**: \`\`\`fenced blocks\`\`\` (selectable for copy), \`inline code\`
+- **Tables**: GFM pipe tables
+- **Blockquotes**: \`> quote\`
+- **Horizontal rules**: \`---\`
+
+### Themed scrollbar
+The editor's textarea uses a theme-aware scrollbar (Pixel, Classic, Modern, Terminal).
+
+---
+
+## 💻 Terminal
+
+A full SQLite-powered command-line interface for database management. Open from the **Apps** button or the desktop icon.
+
+### Navigation
+
+| Command | Description |
+|---------|-------------|
+| \`ls [path]\` | List directory contents. Shows \`📁\` folders and \`📄\` files. |
+| \`cd <path>\` | Change directory. Supports nested paths: \`cd projects/frontend\` |
+| \`cd ..\` | Go up one level |
+| \`cd /\` | Go to root |
+| \`pwd\` | Print working directory |
+| \`cat <path>\` | Show file contents |
+
+### File management
+
+| Command | Description |
+|---------|-------------|
+| \`mkdir <section>/<name>\` | Create a folder inside a section |
+| \`touch <section>/<name>\` | Create a file inside a section |
+| \`mv <src> <dst>\` | Move an item to another folder |
+| \`rm <path>\` | Delete an item (removes children recursively) |
+
+### Database
+
+| Command | Description |
+|---------|-------------|
+| \`sections\` | List all sections (table format) |
+| \`items <section_id>\` | List items in a section (table) |
+| \`export\` | Export entire database as JSON |
+| \`sql <query>\` | Run raw SQL |
+| \`add-section <id> <label> [type]\` | Create a new section |
+| \`add-item <section_id> <title>\` | Add an item to a section |
+| \`rm-item <id>\` | Delete an item by ID |
+| \`rm-section <id>\` | Delete a section |
+
+### Profile
+
+| Command | Description |
+|---------|-------------|
+| \`profile\` | Show profile info |
+
+### SQL safety
+- **SELECT** queries run freely
+- **INSERT / UPDATE / DELETE** require \`--force\` flag (e.g. \`sql DELETE FROM items WHERE id = 'x' --force\`)
+- **CREATE / DROP / ALTER** require \`--danger\` flag
+- This prevents accidental data loss
+
+### Keyboard shortcuts
+- **Tab** — autocomplete commands
+- **Arrow Up/Down** — command history
+- **Ctrl+L** — clear screen
+- **Ctrl+C** — cancel current line
+- **Ctrl+D** — exit terminal
+
+---
+
+## 🎨 Themes
+
+Switch themes from the buttons in the taskbar:
+
+| Theme | Style |
+|-------|-------|
+| **Pixel** | Retro pixel-art aesthetic |
+| **Classic** | Windows 95 look and feel |
+| **Modern** | Clean flat design |
+| **Terminal** | Green-on-black terminal aesthetic |
+
+Themes affect colors, fonts, borders, icons, scrollbars, and overall styling. The wallpaper also changes per theme.
+
+---
+
+## 👤 About Me
+
+The About Me section shows:
+- **Profile card** with avatar, name, and tagline
+- **Bio** with full biography
+- **Skills** tags
+- **Download CV** button (opens PDF)
+
+---
+
+## ⌨️ Quick Reference
+
+| Action | Shortcut |
+|--------|----------|
+| Save file | \`Ctrl+S\` |
+| Select all text | \`Ctrl+A\` |
+| Confirm rename | \`Enter\` |
+| Cancel rename / input | \`Escape\` |
+| Terminal autocomplete | \`Tab\` |
+| Terminal history | \`↑\` / \`↓\` |
+| Clear terminal | \`Ctrl+L\` |
+| Close terminal | \`Ctrl+D\` |
+`,
   });
-  upsertItem(db, {
-    id: "proj-contab2", section_id: "projects", title: "Contab2", description: "Extension of Contab with receipt management and monthly worksheet", sort_order: 1,
-    tags: ["accounting", "receipts", "export", "SMEs"],
-    meta: { language: "TypeScript" },
-    body: `# Contab2
 
-Extension of Contab that adds receipt-by-honorarium management and a worksheet for monthly tax declarations.
-
-## Features
-- Everything in Contab (invoice and receipt registration)
-- Receipt-by-honorarium management
-- Mass export format for receipts-by-honorarium
-- Worksheet to preview how the monthly declaration would look
-- Preliminary reports before sending to the accountant`,
-  });
   upsertItem(db, {
-    id: "proj-contabia", section_id: "projects", title: "ContabIA", description: "AI-powered accounting for micro and small businesses", sort_order: 2,
-    tags: ["AI", "accounting", "voice", "cardex", "SMEs"],
+    id: "proj-contabia", section_id: "projects", title: "ContabIA", description: "AI-powered accounting for micro and small businesses", sort_order: 0,
+    tags: ["TypeScript", "AI", "SaaS", "multi-tenant"],
     meta: { language: "TypeScript" },
     body: `# ContabIA
 
-The evolution of Contab with integrated artificial intelligence, designed especially for micro and small businesses (corner stores, street vendors).
+ContabIA is an AI-powered multi-tenant SaaS platform designed for accounting workflows in micro and small businesses. Originally conceived as a manual invoice registration system, it evolved into a vertical AI solution that automates currency conversion, generates tax recommendations, and is being extended with voice-driven invoice issuance capabilities, all built around a TypeScript-based architecture.`,
+  });
+  upsertItem(db, {
+    id: "proj-expensia", section_id: "projects", title: "ExpensIA", description: "AI-powered expense classification platform", sort_order: 1,
+    tags: ["TypeScript", "AI", "pgvector", "RAG"],
+    meta: { language: "TypeScript" },
+    body: `# ExpensIA
 
-## Current features
-- Everything in Contab and Contab2
-- Automatic USD to PEN conversion using AI
-- Intelligent assistant for tax deduction recommendations
-- Personalized recommendations based on client profile
+An AI-powered expense classification platform that leverages Retrieval-Augmented Generation (RAG) over scanned invoices and receipts to improve financial document processing. The system combines hybrid search retrieval with pgvector embeddings, automated categorization, citation-grounded responses, and an evaluation dashboard backed by a production-grade observability framework.`,
+  });
+  upsertItem(db, {
+    id: "proj-portfolio", section_id: "projects", title: "Portfolio-Desktop Simulator", description: "Browser-based desktop environment portfolio", sort_order: 2,
+    tags: ["React", "TypeScript", "sql.js", "Vite"],
+    meta: { language: "TypeScript" },
+    body: `# Portfolio-Desktop Simulator
 
-## Coming soon
-- Voice-activated invoice and receipt issuance using AI
-- Cardex for product warehouse management
-- Mobile-optimized interface
-- Real-time multi-currency support`,
+A browser-based desktop environment that recreates the experience of a traditional operating system through draggable icons, resizable windows, an in-browser SQLite database, integrated terminal, file editor, theme customization, and dev.to blog connectivity. Developed with React, TypeScript, Vite, and sql.js to showcase advanced frontend architecture and state management.`,
   });
 
   upsertItem(db, {

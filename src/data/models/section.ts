@@ -141,6 +141,37 @@ export function deleteItem(db: Database, id: string) {
   db.run("DELETE FROM items WHERE id = ?", [id]);
 }
 
+export function findItemByNameAndParent(
+  db: Database,
+  sectionId: string,
+  title: string,
+  parentItemId: string | null = null,
+): ItemRow | undefined {
+  const rows = parentItemId === null
+    ? findRootItemsBySectionId(db, sectionId)
+    : findItemsByParentId(db, parentItemId);
+  return rows.find((r) => r.title === title);
+}
+
+export function findChildrenRecursive(db: Database, itemId: string): ItemRow[] {
+  const results: ItemRow[] = [];
+  const queue = [itemId];
+  while (queue.length > 0) {
+    const pid = queue.shift()!;
+    const children = findItemsByParentId(db, pid);
+    for (const child of children) {
+      results.push(child);
+      if (child.meta_json) {
+        try {
+          const meta = JSON.parse(child.meta_json);
+          if (meta?.itemType === "folder") queue.push(child.id);
+        } catch { /* ignore */ }
+      }
+    }
+  }
+  return results;
+}
+
 export function deleteSection(db: Database, id: string) {
   db.run("DELETE FROM items WHERE section_id = ?", [id]);
   db.run("DELETE FROM sections WHERE id = ?", [id]);

@@ -212,13 +212,18 @@ function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisab
 
   return (
     <div className="window-content-inner" onContextMenu={handleContextMenu} onClick={handleContentClick}>
-      {contextMenu && !dragDisabled && (
+      {contextMenu && !dragDisabled && (() => {
+        const menuW = 140;
+        const menuH = 86;
+        const cx = Math.max(4, Math.min(contextMenu.x, window.innerWidth - menuW - 4));
+        const cy = Math.max(4, Math.min(contextMenu.y, window.innerHeight - menuH - 4));
+        return (
         <div
           className="folder-context-menu"
           style={{
             position: "fixed",
-            left: contextMenu.x,
-            top: contextMenu.y,
+            left: cx,
+            top: cy,
             zIndex: 99999,
             background: "var(--menu-bg, #fff)",
             border: "1px solid var(--menu-border, #999)",
@@ -258,15 +263,21 @@ function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisab
             New Folder
           </div>
         </div>
-      )}
+        );
+      })()}
 
-      {itemContextMenu && !dragDisabled && (
+      {itemContextMenu && !dragDisabled && (() => {
+        const menuW = 120;
+        const menuH = 78;
+        const icx = Math.max(4, Math.min(itemContextMenu.x, window.innerWidth - menuW - 4));
+        const icy = Math.max(4, Math.min(itemContextMenu.y, window.innerHeight - menuH - 4));
+        return (
         <div
           className="folder-context-menu"
           style={{
             position: "fixed",
-            left: itemContextMenu.x,
-            top: itemContextMenu.y,
+            left: icx,
+            top: icy,
             zIndex: 99999,
             background: "var(--menu-bg, #fff)",
             border: "1px solid var(--menu-border, #999)",
@@ -306,7 +317,8 @@ function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisab
             Delete
           </div>
         </div>
-      )}
+        );
+      })()}
 
       <div className="filebrowser-list" role="list">
         {creating && (

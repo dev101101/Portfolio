@@ -16,6 +16,11 @@ interface ContextMenuProps {
 function ContextMenu({ x, y, actions, onClose }: ContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
 
+  const menuWidth = 160;
+  const menuHeight = actions.length * 32 + 8;
+  const clampedX = Math.max(4, Math.min(x, window.innerWidth - menuWidth - 4));
+  const clampedY = Math.max(4, Math.min(y, window.innerHeight - menuHeight - 4));
+
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -45,8 +50,8 @@ function ContextMenu({ x, y, actions, onClose }: ContextMenuProps) {
       aria-label="Context menu"
       style={{
         position: "fixed",
-        left: x,
-        top: y,
+        left: clampedX,
+        top: clampedY,
         zIndex: 9999,
         background: "#2d2d2d",
         border: "1px solid #555",

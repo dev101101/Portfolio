@@ -67,14 +67,17 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
 
   const allPositions = useMemo(() => {
     const folderIds = new Set(folders.map((f) => f.id));
+    const cols = getGridCols();
+    const rows = getGridRows();
     const next: Record<string, { x: number; y: number }> = {};
     for (const [id, pos] of Object.entries(positions)) {
       if (folderIds.has(id)) {
-        next[id] = pos;
+        const g = snapToGrid(pos.x, pos.y);
+        if (g.col >= 0 && g.col < cols && g.row >= 0 && g.row < rows) {
+          next[id] = pos;
+        }
       }
     }
-    const cols = getGridCols();
-    const rows = getGridRows();
     for (const f of folders) {
       if (!(f.id in next)) {
         const taken = Object.values(next);

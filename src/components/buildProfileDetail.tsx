@@ -7,6 +7,7 @@ export function buildProfileDetail(profile: Profile): ReactNode {
   parts.push(
     <div
       key="avatar"
+      className="about-card"
       style={{
         display: "flex",
         alignItems: "center",
@@ -15,28 +16,21 @@ export function buildProfileDetail(profile: Profile): ReactNode {
         background: "var(--window-bg)",
         border: "var(--window-border)",
         boxShadow: "var(--window-shadow)",
+        flexWrap: "wrap",
       }}
     >
-      <img
-        className="about-avatar"
-        src={profile.avatar}
-        alt={profile.name}
-        style={{ width: 80, height: 80, flexShrink: 0 }}
-      />
-      <div>
+      <div style={{ minWidth: 0 }}>
         <div
           style={{
             display: "flex",
             alignItems: "center",
             gap: 10,
-            width: "100%",
           }}
         >
           <h1
             style={{
               margin: 0,
               letterSpacing: 0,
-              width: "100%",
               fontSize: "auto",
             }}
           >
@@ -48,7 +42,7 @@ export function buildProfileDetail(profile: Profile): ReactNode {
             className="about-dl-btn"
             aria-label="Download resume as PDF"
           >
-            ⬇ PDF
+            ⬇ RESUME
           </a>
         </div>
         <p className="about-subtitle" style={{ marginTop: 2 }}>

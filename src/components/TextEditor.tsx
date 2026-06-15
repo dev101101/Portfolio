@@ -19,6 +19,18 @@ export interface TextEditorHandle {
   getText: () => string;
 }
 
+function hasDirectiveInBody(body: string, type: string): boolean {
+  let inCode = false;
+  for (const line of body.split("\n")) {
+    if (line.trimStart().startsWith("```")) { inCode = !inCode; continue; }
+    if (inCode) continue;
+    if (line.trim() === "" || !line.startsWith("[")) break;
+    const m = line.match(/^\[(\w+):/);
+    if (m && m[1] === type) return true;
+  }
+  return false;
+}
+
 function loadItem(sectionId: string, itemId?: string): string {
   const db = initDb();
   if (!db) return "";
@@ -26,30 +38,31 @@ function loadItem(sectionId: string, itemId?: string): string {
   if (items.length === 0) return "";
   const item = itemId ? items.find((i) => i.id === itemId) ?? items[0]! : items[0]!;
   if (!item) return "";
+  const body = item.body ?? "";
   const lines: string[] = [];
-  if (item.title) {
+  if (item.title && !hasDirectiveInBody(body, "title")) {
     for (const t of item.title.split(", ")) {
       if (t.trim()) lines.push(`[title: ${t.trim()}]`);
     }
   }
-  if (item.description) {
+  if (item.description && !hasDirectiveInBody(body, "description")) {
     for (const d of item.description.split("\n")) {
       if (d.trim()) lines.push(`[description: ${d.trim()}]`);
     }
   }
-  if (item.tags) {
+  if (item.tags && !hasDirectiveInBody(body, "tags") && !hasDirectiveInBody(body, "tag")) {
     let tags: string[];
     try { tags = JSON.parse(item.tags); }
     catch { tags = item.tags.split(",").map((t) => t.trim()).filter(Boolean); }
     if (tags.length > 0) lines.push(`[tags: ${tags.join(", ")}]`);
   }
-  if (item.meta_json) {
+  if (item.meta_json && !hasDirectiveInBody(body, "meta")) {
     try {
       const meta = JSON.parse(item.meta_json) as Record<string, string>;
       for (const [k, v] of Object.entries(meta)) lines.push(`[meta: ${k}=${v}]`);
     } catch { /* ignore */ }
   }
-  if (item.body) lines.push("", item.body);
+  if (body) lines.push("", body);
   return lines.join("\n");
 }
 
@@ -61,7 +74,17 @@ function parseDirectives(text: string) {
   const tags: string[] = [];
   const meta: Record<string, string> = {};
   const bodyLines: string[] = [];
+  let inCode = false;
   for (const line of text.split("\n")) {
+    if (line.trimStart().startsWith("```")) {
+      inCode = !inCode;
+      bodyLines.push(line);
+      continue;
+    }
+    if (inCode) {
+      bodyLines.push(line);
+      continue;
+    }
     const m = line.match(DIRECTIVE_RE);
     if (!m) { bodyLines.push(line); continue; }
     const d = m[1], v = m[2]!.trim();
@@ -140,63 +163,71 @@ const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(
 
       return (
         <div className="window-content-inner" style={{ padding: "16px 20px" }}>
-          <div className="editor-rendered">
-            {title.length > 0 && title.map((t, i) => (
-              <h1 key={i} className="editor-rendered-title">{t}</h1>
-            ))}
-            {description.length > 0 && description.map((d, i) => (
-              <p key={i} className="editor-rendered-description">{d}</p>
-            ))}
-            {tags.length > 0 && (
-              <div className="editor-rendered-tags">
-                {tags.map((t) => <span key={t} className="skill-tag">{t}</span>)}
-              </div>
-            )}
-            {Object.keys(meta).length > 0 && (
-              <div className="editor-rendered-meta">
-                {Object.entries(meta).map(([k, v]) => (
-                  <div key={k} className="editor-rendered-meta-item">
-                    <span className="editor-rendered-meta-key">{k}</span>
-                    <span className="editor-rendered-meta-value">{v}</span>
+          {!hasContent && <p className="editor-rendered-empty">Empty file</p>}
+          {hasContent && (
+            <div className="editor-rendered">
+              {(title.length > 0 || description.length > 0 || tags.length > 0 || Object.keys(meta).length > 0) && (
+                <div className="content-card">
+                  <div className="content-card-header">
+                    {title.length > 0 && title.map((t, i) => (
+                      <h1 key={i} className="editor-rendered-title">{t}</h1>
+                    ))}
+                    {description.length > 0 && description.map((d, i) => (
+                      <p key={i} className="editor-rendered-description">{d}</p>
+                    ))}
+                    {tags.length > 0 && (
+                      <div className="editor-rendered-tags">
+                        {tags.map((t) => <span key={t} className="skill-tag">{t}</span>)}
+                      </div>
+                    )}
+                    {Object.keys(meta).length > 0 && (
+                      <div className="editor-rendered-meta">
+                        {Object.entries(meta).map(([k, v]) => (
+                          <div key={k} className="editor-rendered-meta-item">
+                            <span className="editor-rendered-meta-key">{k}</span>
+                            <span className="editor-rendered-meta-value">{v}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
-            )}
-            {parsed.body && (
-              <div className="content-body-card" style={{ marginTop: 12 }}>
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    h1: ({ children }) => <h2 className="content-heading">{children}</h2>,
-                    h2: ({ children }) => <h3 className="content-subheading">{children}</h3>,
-                    h3: ({ children }) => <h4 className="content-subsubheading">{children}</h4>,
-                    h4: ({ children }) => <h5 className="content-subsubheading">{children}</h5>,
-                    h5: ({ children }) => <h6 className="content-subsubheading">{children}</h6>,
-                    h6: ({ children }) => <h6 className="content-subsubheading">{children}</h6>,
-                    p: ({ children }) => <p className="content-text">{children}</p>,
-                    ul: ({ children }) => <ul className="content-list">{children}</ul>,
-                    ol: ({ children }) => <ol className="content-list">{children}</ol>,
-                    li: ({ children }) => <li className="content-list-item">{children}</li>,
-                    pre: ({ children }) => <pre className="content-code-block">{children}</pre>,
-                    code: ({ children }) => <code className="content-inline-code">{children}</code>,
-                    blockquote: ({ children }) => <blockquote className="content-blockquote">{children}</blockquote>,
-                    a: ({ href, children }) => <a className="content-link" href={href} target="_blank" rel="noopener noreferrer">{children}</a>,
-                    img: ({ src, alt }) => <img className="content-image" src={src} alt={alt ?? ""} loading="lazy" />,
-                    hr: () => <hr className="content-hr" />,
-                    strong: ({ children }) => <strong className="content-strong">{children}</strong>,
-                    em: ({ children }) => <em className="content-em">{children}</em>,
-                    del: ({ children }) => <del className="content-del">{children}</del>,
-                    table: ({ children }) => <table className="content-table">{children}</table>,
-                    th: ({ children }) => <th className="content-th">{children}</th>,
-                    td: ({ children }) => <td className="content-td">{children}</td>,
-                  }}
-                >
-                  {parsed.body}
-                </ReactMarkdown>
-              </div>
-            )}
-            {!hasContent && <p className="editor-rendered-empty">Empty file</p>}
-          </div>
+                </div>
+              )}
+              {parsed.body && (
+                <div className="content-body-card" style={{ marginTop: 12 }}>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      h1: ({ children }) => <h2 className="content-heading">{children}</h2>,
+                      h2: ({ children }) => <h3 className="content-subheading">{children}</h3>,
+                      h3: ({ children }) => <h4 className="content-subsubheading">{children}</h4>,
+                      h4: ({ children }) => <h5 className="content-subsubheading">{children}</h5>,
+                      h5: ({ children }) => <h6 className="content-subsubheading">{children}</h6>,
+                      h6: ({ children }) => <h6 className="content-subsubheading">{children}</h6>,
+                      p: ({ children }) => <p className="content-text">{children}</p>,
+                      ul: ({ children }) => <ul className="content-list">{children}</ul>,
+                      ol: ({ children }) => <ol className="content-list">{children}</ol>,
+                      li: ({ children }) => <li className="content-list-item">{children}</li>,
+                      pre: ({ children }) => <pre className="content-code-block">{children}</pre>,
+                      code: ({ children }) => <code className="content-inline-code">{children}</code>,
+                      blockquote: ({ children }) => <blockquote className="content-blockquote">{children}</blockquote>,
+                      a: ({ href, children }) => <a className="content-link" href={href} target="_blank" rel="noopener noreferrer">{children}</a>,
+                      img: ({ src, alt }) => <img className="content-image" src={src} alt={alt ?? ""} loading="lazy" />,
+                      hr: () => <hr className="content-hr" />,
+                      strong: ({ children }) => <strong className="content-strong">{children}</strong>,
+                      em: ({ children }) => <em className="content-em">{children}</em>,
+                      del: ({ children }) => <del className="content-del">{children}</del>,
+                      table: ({ children }) => <table className="content-table">{children}</table>,
+                      th: ({ children }) => <th className="content-th">{children}</th>,
+                      td: ({ children }) => <td className="content-td">{children}</td>,
+                    }}
+                  >
+                    {parsed.body}
+                  </ReactMarkdown>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       );
     }

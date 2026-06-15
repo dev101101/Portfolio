@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState, type ReactNode } from "react";
+import { useRef, useCallback, useState, useEffect, type ReactNode } from "react";
 import type { WindowState } from "../types/desktop";
 
 interface WindowProps {
@@ -40,7 +40,39 @@ function Window({
   });
   const [resizing, setResizing] = useState(false);
   const [maximized, setMaximized] = useState(false);
-  const savedRef = useRef({ x: 0, y: 0, w: 580, h: 400 });
+  const savedRef = useRef({ x: 0, y: 0, w: 642, h: 430 });
+
+  const clampPosition = useCallback(() => {
+    const margin = 4;
+    const taskbarH = 40;
+    const maxX = window.innerWidth - win.size.width - margin;
+    const maxY = window.innerHeight - win.size.height - taskbarH - margin;
+    if (maxX < margin && maxY < taskbarH + margin) return;
+    let newX = win.position.x;
+    let newY = win.position.y;
+    if (win.position.x + win.size.width > window.innerWidth - margin) {
+      newX = Math.max(margin, maxX);
+    }
+    if (win.position.x < margin) {
+      newX = margin;
+    }
+    if (win.position.y + win.size.height > window.innerHeight - taskbarH - margin) {
+      newY = Math.max(taskbarH + margin, maxY);
+    }
+    if (win.position.y < taskbarH + margin) {
+      newY = taskbarH + margin;
+    }
+    if (newX !== win.position.x || newY !== win.position.y) {
+      onMove(newX, newY);
+    }
+  }, [win.position, win.size, onMove]);
+
+  useEffect(() => {
+    clampPosition();
+    const handleResize = () => clampPosition();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [clampPosition]);
 
   const toggleMaximize = useCallback(() => {
     if (maximized) {

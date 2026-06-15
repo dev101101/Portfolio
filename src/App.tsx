@@ -18,9 +18,9 @@ import { findItemsBySectionId, deleteSection, upsertItem, deleteItem } from "./d
 import "./styles/App.css";
 
 function createWindow(id: string, title: string, zIndex: number): WindowState {
-  const maxW = Math.min(580, window.innerWidth * 0.92);
+  const maxW = Math.min(642, window.innerWidth * 0.92);
   const w = Math.max(280, maxW);
-  const h = 400;
+  const h = 430;
   return {
     id,
     title,
@@ -69,9 +69,10 @@ function App() {
       const saved = localStorage.getItem("portfolio-locked-sections");
       const base: Set<string> = saved ? new Set(JSON.parse(saved)) : new Set();
       base.add("about");
+      base.add("docs");
       return base;
     } catch {
-      return new Set(["about"]);
+      return new Set(["about", "docs"]);
     }
   });
   const onDbChange = useCallback(() => setRefreshKey((k) => k + 1), []);
@@ -105,10 +106,10 @@ function App() {
 
   const basePos = useMemo(
     () => {
-      const w = Math.min(580, window.innerWidth * 0.92);
+      const w = Math.min(642, window.innerWidth * 0.92);
       return {
         x: Math.max(8, (window.innerWidth - w) / 2),
-        y: Math.max(8, (window.innerHeight - 400 - 40) / 2),
+        y: Math.max(8, (window.innerHeight - 430 - 40) / 2),
       };
     },
     [],

@@ -117,6 +117,7 @@ function App() {
   const cascaded = useRef(new Set<string>());
   const editorRefs = useRef<Record<string, TextEditorHandle>>({});
   const [fileContents, setFileContents] = useState<Record<string, ReactNode>>({});
+  const [itemMeta, setItemMeta] = useState<Record<string, { sectionId: string; itemId: string }>>({});
   const [previewing, setPreviewing] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -204,64 +205,78 @@ function App() {
     [basePos],
   );
 
+  const openItem = useCallback((sectionId: string, itemId: string, itemName: string) => {
+    const id = `item-${itemId}`;
+    const existing = windowsRef.current[id];
+    if (existing?.isOpen) {
+      setWindows((prev) => {
+        const maxZ = Math.max(...Object.values(prev).map((w) => w.zIndex));
+        return { ...prev, [id]: { ...existing, isMinimized: false, zIndex: maxZ + 1 } };
+      });
+      return;
+    }
+
+    setItemMeta((prev) => ({ ...prev, [id]: { sectionId, itemId } }));
+
+    cascadeCount.current += 1;
+    cascaded.current.add(id);
+    const pos = {
+      x: Math.min(basePos.x + cascadeCount.current * CASCADE_STEP, CASCADE_LIMIT),
+      y: Math.min(basePos.y + cascadeCount.current * CASCADE_STEP, CASCADE_LIMIT),
+    };
+
+    setWindows((prev) => {
+      const maxZ = Math.max(...Object.values(prev).map((w) => w.zIndex));
+      return { ...prev, [id]: { ...createWindow(id, itemName, maxZ + 1), position: pos } };
+    });
+    setNextZ((prev) => prev + 1);
+  }, [basePos]);
+
   const onOpenHelp = useCallback(() => {
     const helpContent = (
       <div className="window-content-inner" style={{ padding: "16px 20px", fontSize: "var(--font-size-sm)", lineHeight: 1.7, color: "var(--content-text)" }}>
-        <h2 style={{ margin: "0 0 16px 0", fontSize: "var(--font-size)", color: "var(--content-heading)" }}>Portfolio Help</h2>
+        <h2 style={{ margin: "0 0 16px 0", fontSize: "var(--font-size)", color: "var(--content-heading)" }}>About Text Editor</h2>
+        <p style={{ marginBottom: 12 }}>The Text Editor opens when you double-click or open a file. It has two modes: <strong>Preview</strong> (markdown rendered) and <strong>Edit</strong> (raw textarea).</p>
 
-        <h3 style={{ margin: "16px 0 8px 0", fontSize: "var(--font-size-sm)", color: "var(--content-heading)" }}>📁 Desktop</h3>
+        <h3 style={{ margin: "16px 0 8px 0", fontSize: "var(--font-size-sm)", color: "var(--content-heading)" }}>📂 File Menu</h3>
         <ul style={{ marginBottom: 8 }}>
-          <li><strong>Right-click</strong> empty space → New Folder, New File, Refresh</li>
-          <li><strong>Right-click</strong> icon → Open, Rename, Delete</li>
-          <li><strong>Double-click</strong> icon → open folder/file</li>
-          <li><strong>Drag & drop</strong> icons to rearrange on the grid</li>
-          <li><strong>Rename inline</strong> — type directly below the icon, Enter to save, Escape to cancel</li>
+          <li><strong>Save</strong> (<code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>Ctrl+S</code>) — saves content to database</li>
+          <li><strong>Preview / Edit</strong> — toggles between rendered preview and raw textarea</li>
+          <li><strong>Save Forever</strong> — saves and locks the file as read-only</li>
         </ul>
 
-        <h3 style={{ margin: "16px 0 8px 0", fontSize: "var(--font-size-sm)", color: "var(--content-heading)" }}>📝 File Editor</h3>
-        <p>Files open in preview mode by default. Use the File menu to switch modes.</p>
+        <h3 style={{ margin: "16px 0 8px 0", fontSize: "var(--font-size-sm)", color: "var(--content-heading)" }}>✂️ Selection Menu</h3>
         <ul style={{ marginBottom: 8 }}>
-          <li><strong>File → Save</strong> — saves content to database</li>
-          <li><strong>File → Preview / Edit</strong> — toggles between rendered preview and raw textarea</li>
-          <li><strong>File → Save Forever</strong> — saves and locks as read-only</li>
-          <li><strong>Selection → Select All</strong> — selects all text in editor</li>
+          <li><strong>Select All</strong> (<code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>Ctrl+A</code>) — selects all text in the editor</li>
         </ul>
 
         <h3 style={{ margin: "16px 0 8px 0", fontSize: "var(--font-size-sm)", color: "var(--content-heading)" }}>📋 Directives</h3>
-        <p>Write these in the textarea to structure your content:</p>
+        <p style={{ marginBottom: 4 }}>Write these at the top of your file to add metadata:</p>
         <ul style={{ marginBottom: 8 }}>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>[title: My Title]</code> — heading (multiple allowed)</li>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>[description: Text...]</code> — description (multiple allowed)</li>
+          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>[title: My Title]</code> — section title (multiple allowed)</li>
+          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>[description: Text...]</code> — short description (multiple allowed)</li>
           <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>[tags: tag1, tag2]</code> — skill tags</li>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>[meta: key=value]</code> — key-value pairs</li>
+          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>[meta: key=value]</code> — custom key-value pairs</li>
         </ul>
 
-        <h3 style={{ margin: "16px 0 8px 0", fontSize: "var(--font-size-sm)", color: "var(--content-heading)" }}>💻 Terminal</h3>
-        <p>Full CLI for database management:</p>
+        <h3 style={{ margin: "16px 0 8px 0", fontSize: "var(--font-size-sm)", color: "var(--content-heading)" }}>📝 Markdown Reference</h3>
+        <p style={{ marginBottom: 4 }}>Everything below the directives is rendered as GitHub-Flavored Markdown:</p>
         <ul style={{ marginBottom: 8 }}>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>ls</code>, <code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>cd</code>, <code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>pwd</code>, <code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>cat</code></li>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>sections</code> — list all sections</li>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>items</code> — list items in current section</li>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>add-section &lt;id&gt; &lt;label&gt; &lt;type&gt;</code> — create section</li>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>add-item</code>, <code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>rm-item</code>, <code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>rm-section</code></li>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>export</code> — download database</li>
-          <li>Tab completion, arrow key history, Ctrl+L to clear</li>
-        </ul>
-
-        <h3 style={{ margin: "16px 0 8px 0", fontSize: "var(--font-size-sm)", color: "var(--content-heading)" }}>🎨 Themes</h3>
-        <p>Click the theme buttons in the taskbar to switch between:</p>
-        <ul style={{ marginBottom: 8 }}>
-          <li><strong>Pixel</strong> — retro pixel art style</li>
-          <li><strong>Classic</strong> — Windows 95 aesthetic</li>
-          <li><strong>Modern</strong> — clean flat design</li>
-          <li><strong>Terminal</strong> — green-on-black terminal look</li>
+          <li><strong># Heading</strong> → <strong>## Heading</strong> → <strong>###### Heading</strong> — section headings (h1–h6)</li>
+          <li><strong>**bold**</strong>, <strong>*italic*</strong>, <strong>~~strikethrough~~</strong> — text emphasis</li>
+          <li><strong>- item</strong> or <strong>1. item</strong> — unordered / ordered lists</li>
+          <li><strong>[text](url)</strong> — links, <strong>![alt](src)</strong> — images</li>
+          <li><strong>```</strong> — fenced code blocks (syntax-highlighted, selectable for copy)</li>
+          <li><strong>`code`</strong> — inline code</li>
+          <li><strong>| col1 | col2 |</strong> — tables (GFM)</li>
+          <li><strong>&gt; quote</strong> — blockquotes, <strong>---</strong> — horizontal rules</li>
         </ul>
 
         <h3 style={{ margin: "16px 0 8px 0", fontSize: "var(--font-size-sm)", color: "var(--content-heading)" }}>⌨️ Shortcuts</h3>
         <ul>
           <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>Ctrl+S</code> — save file</li>
           <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>Ctrl+A</code> — select all text</li>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>Enter</code> — confirm rename / save</li>
+          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>Enter</code> — confirm / save rename</li>
           <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>Escape</code> — cancel rename</li>
         </ul>
       </div>
@@ -359,7 +374,15 @@ function App() {
   const onNewFile = useCallback((id: string, label: string) => {
     const db = initDb();
     if (db) {
-      saveSection(db, { id, label: uniqueLabel(label), type: "file" });
+      const uniqueName = uniqueLabel(label);
+      saveSection(db, { id, label: uniqueName, type: "file" });
+      saveItem(db, {
+        id: `${id}-item`,
+        section_id: id,
+        title: uniqueName,
+        body: "",
+        sort_order: 0,
+      });
       persistDb();
       setRefreshKey((k) => k + 1);
     }
@@ -459,7 +482,17 @@ function App() {
           const isUnlockedFile = isFileSection && !lockedSections.has(w.id);
           const isLockedFile = isFileSection && lockedSections.has(w.id);
 
+          const isItemUnlocked = w.id.startsWith("item-") && !lockedSections.has(w.id);
           const fileNavbar = isUnlockedFile ? (
+            <FileNavbar
+              onSave={() => editorRefs.current[w.id]?.save()}
+              onPreview={() => setPreviewing((prev) => ({ ...prev, [w.id]: prev[w.id] === undefined ? false : !prev[w.id] }))}
+              previewing={previewing[w.id] !== false}
+              onSelectAll={() => editorRefs.current[w.id]?.selectAll()}
+              onSaveForever={() => handleSaveForever(w.id)}
+              onOpenHelp={onOpenHelp}
+            />
+          ) : isItemUnlocked ? (
             <FileNavbar
               onSave={() => editorRefs.current[w.id]?.save()}
               onPreview={() => setPreviewing((prev) => ({ ...prev, [w.id]: prev[w.id] === undefined ? false : !prev[w.id] }))}
@@ -507,10 +540,22 @@ function App() {
                   theme={theme}
                   onPathChange={(path) => setWindowTitle(w.id, path)}
                   onOpenFile={(title, detail) => openFile(title, detail)}
+                  onOpenSection={(id) => openFolder(id)}
                   onOpenAbout={() => openFolder("about")}
+                  onOpenItem={(sectionId, itemId, itemName) => openItem(sectionId, itemId, itemName)}
+                />
+              ) : w.id.startsWith("item-") && itemMeta[w.id] ? (
+                <TextEditor
+                  ref={(el) => { if (el) editorRefs.current[w.id] = el; }}
+                  sectionId={itemMeta[w.id]!.sectionId}
+                  itemId={itemMeta[w.id]!.itemId}
+                  sectionLabel={w.title}
+                  onDbChange={onDbChange}
+                  preview={previewing[w.id] !== false}
+                  locked={lockedSections.has(w.id)}
                 />
               ) : null}
-              {w.id.startsWith("file-") && fileContents[w.id]}
+              {w.id.startsWith("file-") && <div className="window-content-inner">{fileContents[w.id]}</div>}
             </Window>
           );
         })}

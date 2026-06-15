@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
 import type { ReactNode } from "react";
 import {
   PixelFolder,
@@ -12,6 +12,7 @@ import {
 } from "./FolderSvgs";
 
 export interface FolderItem {
+  id?: string;
   name: string;
   type: "file" | "folder" | "terminal";
   detail: ReactNode;
@@ -26,9 +27,17 @@ interface FolderProps {
   onSelectFolder?: (name: string) => void;
   sectionId?: string;
   dragDisabled?: boolean;
+  onCreateFile?: (name: string) => void;
+  onCreateFolder?: (name: string) => void;
+  parentItemId?: string;
+  onDropOnFolder?: (targetFolderName: string, draggedItemName: string) => void;
+  onOpenItem?: (sectionId: string, itemId: string, itemName: string) => void;
+  onDeleteItem?: (itemName: string) => void;
 }
 
-function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisabled }: FolderProps) {
+let _dragData: { sectionId: string; itemName: string; parentItemId: string | null } | null = null;
+
+function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisabled, onCreateFile, onCreateFolder, parentItemId, onDropOnFolder, onOpenItem, onDeleteItem }: FolderProps) {
   const FolderIcon = theme === "pixel" ? PixelFolder :
     theme === "classic" ? ClassicFolder :
     theme === "terminal" ? TerminalFolder :
@@ -39,28 +48,308 @@ function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisab
     theme === "terminal" ? TerminalFile :
     ModernFile;
 
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [itemContextMenu, setItemContextMenu] = useState<{ x: number; y: number; item: FolderItem } | null>(null);
+  const [creating, setCreating] = useState<"file" | "folder" | null>(null);
+  const [newName, setNewName] = useState("");
+  const [dragOverName, setDragOverName] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (creating && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [creating]);
+
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    if (dragDisabled) return;
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  }, [dragDisabled]);
+
+  const closeContextMenu = useCallback(() => {
+    setContextMenu(null);
+  }, []);
+
+  const handleNewFile = useCallback(() => {
+    setContextMenu(null);
+    setCreating("file");
+    setNewName("");
+  }, []);
+
+  const handleNewFolder = useCallback(() => {
+    setContextMenu(null);
+    setCreating("folder");
+    setNewName("");
+  }, []);
+
+  const handleCreateSubmit = useCallback(() => {
+    const name = newName.trim();
+    if (!name) {
+      setCreating(null);
+      return;
+    }
+    if (creating === "file") {
+      onCreateFile?.(name);
+    } else {
+      onCreateFolder?.(name);
+    }
+    setCreating(null);
+    setNewName("");
+  }, [newName, creating, onCreateFile, onCreateFolder]);
+
+  const handleCreateBlur = useCallback(() => {
+    setCreating(null);
+    setNewName("");
+  }, []);
+
+  const handleCreateKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleCreateSubmit();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setCreating(null);
+      setNewName("");
+    }
+  }, [handleCreateSubmit]);
+
+  const handleItemContextMenu = useCallback((e: React.MouseEvent, item: FolderItem) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (item.type === "terminal") return;
+    setItemContextMenu({ x: e.clientX, y: e.clientY, item });
+  }, []);
+
+  const closeItemContextMenu = useCallback(() => {
+    setItemContextMenu(null);
+  }, []);
+
+  const handleItemOpen = useCallback(() => {
+    if (!itemContextMenu) return;
+    const item = itemContextMenu.item;
+    setItemContextMenu(null);
+    if (item.url) {
+      window.open(item.url, "_blank");
+    } else if (item.type === "folder") {
+      onSelectFolder?.(item.name);
+    } else if (sectionId && onOpenItem && item.id && !dragDisabled) {
+      onOpenItem(sectionId, item.id, item.name);
+    } else {
+      onOpenFile?.(item.name, item.detail);
+    }
+  }, [itemContextMenu, sectionId, dragDisabled, onSelectFolder, onOpenItem, onOpenFile]);
+
+  const handleItemDelete = useCallback(() => {
+    if (!itemContextMenu) return;
+    const item = itemContextMenu.item;
+    setItemContextMenu(null);
+    onDeleteItem?.(item.name);
+  }, [itemContextMenu, onDeleteItem]);
+
+  // --- Drag & Drop ---
+
   const handleDragStart = useCallback((e: React.DragEvent, itemName: string) => {
     if (!sectionId) return;
-    e.dataTransfer.setData("text/plain", JSON.stringify({ sectionId, itemName }));
+    _dragData = { sectionId, itemName, parentItemId: parentItemId ?? null };
+    e.dataTransfer.setData("text/plain", _dragData.itemName);
     e.dataTransfer.effectAllowed = "move";
-  }, [sectionId]);
+  }, [sectionId, parentItemId]);
+
+  const handleDragEnd = useCallback(() => {
+    _dragData = null;
+  }, []);
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    const el = e.currentTarget as HTMLElement;
+    if (el.getAttribute("data-item-type") === "folder") {
+      e.preventDefault();
+      setDragOverName(el.getAttribute("data-item-name"));
+    }
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    const el = e.currentTarget as HTMLElement;
+    if (el.getAttribute("data-item-type") === "folder") {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+    }
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    const el = e.currentTarget as HTMLElement;
+    if (el.getAttribute("data-item-type") === "folder") {
+      setDragOverName((prev) => prev === el.getAttribute("data-item-name") ? null : prev);
+    }
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    const el = e.currentTarget as HTMLElement;
+    const targetName = el.getAttribute("data-item-name");
+    if (!targetName) return;
+    e.preventDefault();
+    setDragOverName(null);
+    const data = _dragData ?? JSON.parse(e.dataTransfer.getData("text/plain") || "null");
+    if (!data || !data.itemName) return;
+    onDropOnFolder?.(targetName, data.itemName);
+    _dragData = null;
+  }, [onDropOnFolder]);
+
+  const handleContentClick = useCallback(() => {
+    setItemContextMenu(null);
+  }, []);
+
+  // Close context menus on click outside
+  useEffect(() => {
+    if (!contextMenu && !itemContextMenu) return;
+    const handler = () => {
+      setContextMenu(null);
+      setItemContextMenu(null);
+    };
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, [contextMenu, itemContextMenu]);
 
   return (
-    <div className="window-content-inner">
+    <div className="window-content-inner" onContextMenu={handleContextMenu} onClick={handleContentClick}>
+      {contextMenu && !dragDisabled && (
+        <div
+          className="folder-context-menu"
+          style={{
+            position: "fixed",
+            left: contextMenu.x,
+            top: contextMenu.y,
+            zIndex: 99999,
+            background: "var(--menu-bg, #fff)",
+            border: "1px solid var(--menu-border, #999)",
+            borderRadius: 4,
+            boxShadow: "2px 2px 6px rgba(0,0,0,0.15)",
+            padding: "4px 0",
+            minWidth: 140,
+            fontSize: "var(--font-size-sm)",
+            fontFamily: "var(--font-family)",
+          }}
+          onClick={closeContextMenu}
+        >
+          <div
+            className="folder-context-item"
+            onClick={handleNewFile}
+            style={{
+              padding: "6px 16px",
+              cursor: "pointer",
+              color: "var(--menu-text, #000)",
+            }}
+            onMouseEnter={(e) => { (e.target as HTMLElement).style.background = "var(--menu-hover-bg, #e0e0e0)"; }}
+            onMouseLeave={(e) => { (e.target as HTMLElement).style.background = "transparent"; }}
+          >
+            New File
+          </div>
+          <div
+            className="folder-context-item"
+            onClick={handleNewFolder}
+            style={{
+              padding: "6px 16px",
+              cursor: "pointer",
+              color: "var(--menu-text, #000)",
+            }}
+            onMouseEnter={(e) => { (e.target as HTMLElement).style.background = "var(--menu-hover-bg, #e0e0e0)"; }}
+            onMouseLeave={(e) => { (e.target as HTMLElement).style.background = "transparent"; }}
+          >
+            New Folder
+          </div>
+        </div>
+      )}
+
+      {itemContextMenu && !dragDisabled && (
+        <div
+          className="folder-context-menu"
+          style={{
+            position: "fixed",
+            left: itemContextMenu.x,
+            top: itemContextMenu.y,
+            zIndex: 99999,
+            background: "var(--menu-bg, #fff)",
+            border: "1px solid var(--menu-border, #999)",
+            borderRadius: 4,
+            boxShadow: "2px 2px 6px rgba(0,0,0,0.15)",
+            padding: "4px 0",
+            minWidth: 120,
+            fontSize: "var(--font-size-sm)",
+            fontFamily: "var(--font-family)",
+          }}
+          onClick={closeItemContextMenu}
+        >
+          <div
+            className="folder-context-item"
+            onClick={handleItemOpen}
+            style={{
+              padding: "6px 16px",
+              cursor: "pointer",
+              color: "var(--menu-text, #000)",
+            }}
+            onMouseEnter={(e) => { (e.target as HTMLElement).style.background = "var(--menu-hover-bg, #e0e0e0)"; }}
+            onMouseLeave={(e) => { (e.target as HTMLElement).style.background = "transparent"; }}
+          >
+            Open
+          </div>
+          <div
+            className="folder-context-item"
+            onClick={handleItemDelete}
+            style={{
+              padding: "6px 16px",
+              cursor: "pointer",
+              color: "var(--menu-text, #000)",
+            }}
+            onMouseEnter={(e) => { (e.target as HTMLElement).style.background = "var(--menu-hover-bg, #e0e0e0)"; }}
+            onMouseLeave={(e) => { (e.target as HTMLElement).style.background = "transparent"; }}
+          >
+            Delete
+          </div>
+        </div>
+      )}
+
       <div className="filebrowser-list" role="list">
+        {creating && (
+          <div
+            className="filebrowser-item creating"
+            role="listitem"
+          >
+            {creating === "folder" ? <FolderIcon /> : <FileIcon />}
+            <input
+              ref={inputRef}
+              type="text"
+              className="filebrowser-create-inline"
+              placeholder={creating === "file" ? "New file..." : "New folder..."}
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onBlur={handleCreateBlur}
+              onKeyDown={handleCreateKeyDown}
+            />
+          </div>
+        )}
         {items.map((item, index) => (
           <div
             key={`${item.name}-${index}`}
-            className="filebrowser-item"
+            className={"filebrowser-item" + (dragOverName === item.name && item.type === "folder" ? " drag-over" : "")}
             role="listitem"
             tabIndex={0}
             draggable={!!sectionId && !dragDisabled}
+            data-item-name={item.name}
+            data-item-type={item.type}
             onDragStart={(e) => handleDragStart(e, item.name)}
+            onDragEnd={handleDragEnd}
+            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onContextMenu={(e) => handleItemContextMenu(e, item)}
             onDoubleClick={() => {
               if (item.url) {
                 window.open(item.url, "_blank");
               } else if (item.type === "folder") {
                 onSelectFolder?.(item.name);
+              } else if (sectionId && onOpenItem && item.id && !dragDisabled) {
+                onOpenItem(sectionId, item.id, item.name);
               } else {
                 onOpenFile?.(item.name, item.detail);
               }
@@ -72,6 +361,8 @@ function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisab
                   window.open(item.url, "_blank");
                 } else if (item.type === "folder") {
                   onSelectFolder?.(item.name);
+                } else if (sectionId && onOpenItem && item.id && !dragDisabled) {
+                  onOpenItem(sectionId, item.id, item.name);
                 } else {
                   onOpenFile?.(item.name, item.detail);
                 }

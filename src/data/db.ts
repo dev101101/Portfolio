@@ -1,7 +1,7 @@
 import type { Database } from "sql.js";
 import initSqlJs from "sql.js";
 import { getProfile as getProfileCtrl } from "./controllers/profile";
-import { getSections as getSectionsCtrl } from "./controllers/section";
+import { getSections as getSectionsCtrl, getRootItems as getRootItemsCtrl, getChildItems as getChildItemsCtrl } from "./controllers/section";
 import { seed } from "./seed";
 
 let db: Database | null = null;
@@ -67,6 +67,7 @@ const SQL = await initSqlJs({
           CREATE TABLE IF NOT EXISTS items (
             id TEXT PRIMARY KEY,
             section_id TEXT NOT NULL REFERENCES sections(id) ON DELETE CASCADE,
+            parent_item_id TEXT REFERENCES items(id) ON DELETE CASCADE,
             title TEXT NOT NULL,
             description TEXT,
             date TEXT,
@@ -77,6 +78,12 @@ const SQL = await initSqlJs({
             sort_order INTEGER NOT NULL DEFAULT 0
           )
         `);
+      }
+      // migrate existing databases — add parent_item_id if not present
+      const cols = d.exec("PRAGMA table_info(items)");
+      const colNames = cols[0]?.values.map((v) => v[1]) ?? [];
+      if (!colNames.includes("parent_item_id")) {
+        d.run("ALTER TABLE items ADD COLUMN parent_item_id TEXT REFERENCES items(id) ON DELETE CASCADE");
       }
       seed(d);
       saveDbToStorage(d);
@@ -99,6 +106,7 @@ export function initDb(): Database | null {
 export { initSqlite as initDbAsync };
 
 export interface PageItem {
+  id?: string;
   title: string;
   description?: string;
   date?: string;
@@ -106,6 +114,7 @@ export interface PageItem {
   body?: string;
   url?: string;
   meta?: Record<string, string>;
+  parentItemId?: string;
 }
 
 export interface Section {
@@ -136,6 +145,7 @@ export function getSections(): Section[] {
     label: s.label,
     type: s.type,
     items: s.items.map((i) => ({
+      id: i.id,
       title: i.title,
       description: i.description,
       date: i.date,
@@ -143,6 +153,38 @@ export function getSections(): Section[] {
       body: i.body,
       url: i.url,
       meta: i.meta,
+      parentItemId: i.parentItemId,
     })),
+  }));
+}
+
+export function getRootItems(sectionId: string): PageItem[] {
+  if (!db) return [];
+  return getRootItemsCtrl(db, sectionId).map((i) => ({
+    id: i.id,
+    title: i.title,
+    description: i.description,
+    date: i.date,
+    tags: i.tags,
+    body: i.body,
+    url: i.url,
+    meta: i.meta,
+    parentItemId: i.parentItemId,
+  }));
+}
+
+export function getChildItems(parentId: string): PageItem[] {
+  if (!db) return [];
+  const results = getChildItemsCtrl(db, parentId);
+  return results.map((i) => ({
+    id: i.id,
+    title: i.title,
+    description: i.description,
+    date: i.date,
+    tags: i.tags,
+    body: i.body,
+    url: i.url,
+    meta: i.meta,
+    parentItemId: i.parentItemId,
   }));
 }

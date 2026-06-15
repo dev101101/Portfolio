@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Markdown con CSS</title>
+
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background: #f5f5f5;
+                padding: 40px;
+            }
+
+            article {
+                max-width: 800px;
+                margin: auto;
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            }
+
+            h1 {
+                color: #1976d2;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            }
+
+            blockquote {
+                border-left: 5px solid #1976d2;
+                padding-left: 15px;
+                color: gray;
+            }
+        </style>
+
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    </head>
+
+    <body>
+        <article id="contenido"></article>
+
+        <script>
+            const markdown = `
+# Hola Mundo
+
+Este es un **texto en negrita**.
+
+> Una cita con estilo.
+
+- Uno
+- Dos
+- Tres
+`;
+
+            document.getElementById("contenido").innerHTML =
+                marked.parse(markdown);
+        </script>
+    </body>
+</html>

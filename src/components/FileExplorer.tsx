@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import type { ReactNode } from "react";
 import {
   PixelFolder,
@@ -10,7 +10,9 @@ import {
   ModernFile,
   TerminalFile,
 } from "./FolderSvgs";
-import { getSections, type PageItem } from "../data/db";
+import { getSections, getRootItems, getChildItems, type PageItem, initDb, persistDb } from "../data/db";
+import { saveItem, removeItem } from "../data/controllers/section";
+import { findItemsBySectionId } from "../data/models/section";
 import { fetchBlogList, fetchBlogArticle, mapDevtoToPageItem } from "../data/blog-api";
 import { PROTECTED_IDS } from "../data/constants";
 import Folder from "./Folder";
@@ -72,9 +74,16 @@ interface ExplorerSection {
   items: FolderItem[];
 }
 
+interface NavEntry {
+  sectionId: string;
+  label: string;
+  parentItemId?: string;
+}
+
 function buildItemsFrom(items: PageItem[], sectionId: string): FolderItem[] {
   const isProtected = PROTECTED_IDS.includes(sectionId);
   return items.map((item) => ({
+    id: item.id,
     name: item.title,
     type: (item.meta?.["itemType"] as "file" | "folder" | undefined) ?? "file",
     description: item.description,
@@ -126,12 +135,32 @@ function getExplorerSections(): ExplorerSection[] {
   }));
 }
 
+function getItemsForNav(sectionId: string, parentItemId?: string): FolderItem[] {
+  if (!parentItemId) {
+    const rootItems = getRootItems(sectionId);
+    return buildItemsFrom(rootItems, sectionId);
+  }
+  const childItems = getChildItems(parentItemId);
+  return buildItemsFrom(childItems, sectionId);
+}
+
+let nameCounter = 0;
+function uniqueItemName(base: string, existing: FolderItem[]): string {
+  const names = new Set(existing.map((i) => i.name));
+  if (!names.has(base)) return base;
+  let n = 2;
+  while (names.has(`${base} ${n}`)) n++;
+  return `${base} ${n}`;
+}
+
 interface FileExplorerProps {
   initialSection?: string;
   theme: string;
   onPathChange?: (path: string) => void;
   onOpenFile?: (title: string, detail: ReactNode) => void;
+  onOpenSection?: (id: string) => void;
   onOpenAbout?: () => void;
+  onOpenItem?: (sectionId: string, itemId: string, itemName: string) => void;
 }
 
 function FileExplorer({
@@ -140,6 +169,8 @@ function FileExplorer({
   onPathChange,
   onOpenFile,
   onOpenAbout,
+  onOpenSection,
+  onOpenItem,
 }: FileExplorerProps) {
   const FolderIcon =
     theme === "pixel"
@@ -162,6 +193,7 @@ function FileExplorer({
   const [staticSections] = useState<ExplorerSection[]>(() => getExplorerSections());
   const [blogItems, setBlogItems] = useState<FolderItem[] | null>(null);
   const [blogLoading, setBlogLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -197,25 +229,154 @@ function FileExplorer({
   const [selectedSection, setSelectedSection] = useState(initialSectionId);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
-  const section = sections.find((s) => s.id === selectedSection);
+  // Navigation stack for nested folders
+  const [navStack, setNavStack] = useState<NavEntry[]>([]);
+
+  const currentNav = navStack.length > 0 ? navStack[navStack.length - 1] : undefined;
+  const currentSectionId = currentNav?.sectionId ?? selectedSection;
+  const currentParentItemId = currentNav?.parentItemId;
+
+  const section = sections.find((s) => s.id === currentSectionId);
+
+  // Current items: root items or items under current parent
+  const currentItems = useMemo(() => {
+    void refreshKey;
+    const sec = sections.find((s) => s.id === currentSectionId);
+    if (!sec) return [];
+    if (PROTECTED_IDS.includes(currentSectionId)) {
+      return sec.items;
+    }
+    const items = getItemsForNav(currentSectionId, currentParentItemId);
+    return items;
+  }, [currentSectionId, currentParentItemId, sections, refreshKey]);
 
   useEffect(() => {
     if (selectedItem) {
       onPathChange?.(`Desktop › ${section?.label ?? ""} › ${selectedItem}`);
     } else {
-      onPathChange?.(`Desktop › ${section?.label ?? ""}`);
+      const path = navStack.map((n) => n.label).join(" › ");
+      onPathChange?.(`Desktop › ${section?.label ?? ""}${path ? ` › ${path}` : ""}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSection, selectedItem, section?.label]);
+  }, [selectedSection, selectedItem, section?.label, navStack]);
 
   const handleSectionClick = (id: string) => {
     if (id === "about") {
       onOpenAbout?.();
       return;
     }
+    const sec = sections.find((s) => s.id === id);
+    if (sec?.type === "file") {
+      onOpenSection?.(id);
+      return;
+    }
     setSelectedSection(id);
     setSelectedItem(null);
+    setNavStack([]);
   };
+
+  const handleSelectFolder = useCallback((name: string) => {
+    const item = currentItems.find((i) => i.name === name);
+    if (!item || item.type !== "folder") {
+      if (item && item.id && onOpenItem && !PROTECTED_IDS.includes(currentSectionId)) {
+        onOpenItem(currentSectionId, item.id, item.name);
+      } else if (item) {
+        onOpenFile?.(item.name, item.detail);
+      }
+      return;
+    }
+    const db = initDb();
+    let realId = `${currentSectionId}-${name}`;
+    if (db) {
+      const allItems = findItemsBySectionId(db, currentSectionId);
+      const dbItem = allItems.find(
+        (i) => i.title === name && i.parent_item_id === (currentParentItemId ?? null),
+      );
+      if (dbItem) realId = dbItem.id;
+    }
+    setNavStack((prev) => [...prev, { sectionId: currentSectionId, parentItemId: realId, label: name }]);
+    setSelectedItem(null);
+  }, [currentItems, currentSectionId, currentParentItemId, onOpenFile, onOpenItem]);
+
+  const handleNavigateBack = useCallback(() => {
+    setNavStack((prev) => prev.slice(0, -1));
+    setSelectedItem(null);
+  }, []);
+
+  const handleCreateFile = useCallback((name: string) => {
+    const db = initDb();
+    if (!db) return;
+    const cleanName = uniqueItemName(name, currentItems);
+    const id = `file-${Date.now()}-${++nameCounter}`;
+    saveItem(db, {
+      id,
+      section_id: currentSectionId,
+      parent_item_id: currentParentItemId,
+      title: cleanName,
+      body: "",
+      sort_order: 0,
+    });
+    persistDb();
+    setRefreshKey((k) => k + 1);
+  }, [currentSectionId, currentParentItemId, currentItems]);
+
+  const handleCreateFolder = useCallback((name: string) => {
+    const db = initDb();
+    if (!db) return;
+    const cleanName = uniqueItemName(name, currentItems);
+    const id = `folder-${Date.now()}-${++nameCounter}`;
+    saveItem(db, {
+      id,
+      section_id: currentSectionId,
+      parent_item_id: currentParentItemId,
+      title: cleanName,
+      meta: { itemType: "folder" },
+      sort_order: 0,
+    });
+    persistDb();
+    setRefreshKey((k) => k + 1);
+  }, [currentSectionId, currentParentItemId, currentItems]);
+
+  const handleDeleteItem = useCallback((itemName: string) => {
+    const db = initDb();
+    if (!db) return;
+    const allItems = findItemsBySectionId(db, currentSectionId);
+    const dbItem = allItems.find(
+      (i) => i.title === itemName && i.parent_item_id === (currentParentItemId ?? null),
+    );
+    if (!dbItem) return;
+    removeItem(db, dbItem.id);
+    persistDb();
+    setRefreshKey((k) => k + 1);
+  }, [currentSectionId, currentParentItemId]);
+
+  const handleDropOnFolder = useCallback((targetFolderName: string, draggedItemName: string) => {
+    const db = initDb();
+    if (!db) return;
+    const targetItem = currentItems.find((i) => i.name === targetFolderName && i.type === "folder");
+    if (!targetItem) return;
+    const allItems = findItemsBySectionId(db, currentSectionId);
+    const targetDbItem = allItems.find((i) => i.title === targetFolderName && i.parent_item_id === (currentParentItemId ?? null));
+    if (!targetDbItem) return;
+    const draggedDbItem = allItems.find((i) => i.title === draggedItemName && i.parent_item_id === (currentParentItemId ?? null));
+    if (!draggedDbItem) return;
+    if (draggedDbItem.id === targetDbItem.id) return;
+    saveItem(db, {
+      id: draggedDbItem.id,
+      section_id: currentSectionId,
+      parent_item_id: targetDbItem.id,
+      title: draggedDbItem.title,
+      body: draggedDbItem.body ?? undefined,
+      description: draggedDbItem.description ?? undefined,
+      date: draggedDbItem.date ?? undefined,
+      tags: draggedDbItem.tags ? JSON.parse(draggedDbItem.tags) : undefined,
+      url: draggedDbItem.url ?? undefined,
+      meta: draggedDbItem.meta_json ? JSON.parse(draggedDbItem.meta_json) : undefined,
+      sort_order: draggedDbItem.sort_order,
+    });
+    persistDb();
+    setRefreshKey((k) => k + 1);
+  }, [currentSectionId, currentParentItemId, currentItems]);
 
   if (!section) {
     return (
@@ -278,14 +439,48 @@ function FileExplorer({
               onBack={() => setSelectedItem(null)}
             />
           ) : (
-            <Folder
-              items={section.items}
-              theme={theme}
-              onOpenFile={onOpenFile}
-              onSelectFolder={(name) => setSelectedItem(name)}
-              sectionId={section.id}
-              dragDisabled={PROTECTED_IDS.includes(section.id)}
-            />
+            <>
+              {/* Breadcrumb navigation */}
+              {navStack.length > 0 && (
+                <div
+                  className="explorer-breadcrumb"
+                  style={{
+                    padding: "6px 12px",
+                    borderBottom: "1px solid var(--border-color, #ccc)",
+                    fontSize: "var(--font-size-xs)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  <span
+                    className="explorer-breadcrumb-back"
+                    onClick={handleNavigateBack}
+                    style={{ cursor: "pointer", fontWeight: "bold", color: "var(--accent-color, #06c)" }}
+                  >
+                    ← Back
+                  </span>
+                  <span style={{ color: "var(--content-subtitle, #666)" }}>
+                    {navStack.map((n) => n.label).join(" › ")}
+                  </span>
+                </div>
+              )}
+              <Folder
+                key={`${currentSectionId}-${currentParentItemId ?? "root"}-${refreshKey}`}
+                items={currentItems}
+                theme={theme}
+                onOpenFile={onOpenFile}
+                onSelectFolder={handleSelectFolder}
+                sectionId={currentSectionId}
+                dragDisabled={PROTECTED_IDS.includes(currentSectionId)}
+                onCreateFile={handleCreateFile}
+                onCreateFolder={handleCreateFolder}
+                parentItemId={currentParentItemId}
+                onDropOnFolder={handleDropOnFolder}
+                onOpenItem={onOpenItem}
+                onDeleteItem={handleDeleteItem}
+              />
+            </>
           )}
         </div>
       </div>

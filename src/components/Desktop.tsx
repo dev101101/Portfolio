@@ -66,7 +66,13 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
   });
 
   const allPositions = useMemo(() => {
-    const next = { ...positions };
+    const folderIds = new Set(folders.map((f) => f.id));
+    const next: Record<string, { x: number; y: number }> = {};
+    for (const [id, pos] of Object.entries(positions)) {
+      if (folderIds.has(id)) {
+        next[id] = pos;
+      }
+    }
     const cols = getGridCols();
     const rows = getGridRows();
     for (const f of folders) {
@@ -91,8 +97,15 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
   }, [folders, positions]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(positions));
-  }, [positions]);
+    const filtered: Record<string, { x: number; y: number }> = {};
+    const folderIds = new Set(folders.map((f) => f.id));
+    for (const [id, pos] of Object.entries(positions)) {
+      if (folderIds.has(id)) {
+        filtered[id] = pos;
+      }
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+  }, [positions, folders]);
 
   const moveIcon = useCallback((id: string, x: number, y: number) => {
     setPositions((prev) => ({ ...prev, [id]: { x, y } }));
@@ -179,16 +192,88 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
   const handleNewFolder = useCallback(() => {
     const id = `folder-${Date.now()}`;
     pendingRenameRef.current = id;
+
+    if (contextMenu && contextMenu.type === "desktop") {
+      const target = snapToGrid(contextMenu.x, contextMenu.y);
+      const cols = getGridCols();
+      const rows = getGridRows();
+      const taken = Object.values(positions);
+      const targetPixel = gridToPixel(target.col, target.row);
+      const inBounds = target.col >= 0 && target.col < cols && target.row >= 0 && target.row < rows;
+      const isFree = inBounds && !taken.some((t) => t.x === targetPixel.x && t.y === targetPixel.y);
+
+      let pos: { x: number; y: number };
+      if (isFree) {
+        pos = targetPixel;
+      } else {
+        let placed = false;
+        pos = targetPixel;
+        for (let r = 0; r < rows && !placed; r++) {
+          for (let c = 0; c < cols && !placed; c++) {
+            const candidate = gridToPixel(c, r);
+            if (!taken.some((t) => t.x === candidate.x && t.y === candidate.y)) {
+              pos = candidate;
+              placed = true;
+            }
+          }
+        }
+        if (!placed) pos = { x: 0, y: -9999 };
+      }
+
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const allPos = saved ? JSON.parse(saved) : {};
+        allPos[id] = pos;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(allPos));
+      } catch { /* ignore */ }
+    }
+
     onNewFolder(id, "New Folder");
     closeContextMenu();
-  }, [onNewFolder, closeContextMenu]);
+  }, [onNewFolder, closeContextMenu, contextMenu, positions]);
 
   const handleNewFile = useCallback(() => {
     const id = `file-${Date.now()}`;
     pendingRenameRef.current = id;
+
+    if (contextMenu && contextMenu.type === "desktop") {
+      const target = snapToGrid(contextMenu.x, contextMenu.y);
+      const cols = getGridCols();
+      const rows = getGridRows();
+      const taken = Object.values(positions);
+      const targetPixel = gridToPixel(target.col, target.row);
+      const inBounds = target.col >= 0 && target.col < cols && target.row >= 0 && target.row < rows;
+      const isFree = inBounds && !taken.some((t) => t.x === targetPixel.x && t.y === targetPixel.y);
+
+      let pos: { x: number; y: number };
+      if (isFree) {
+        pos = targetPixel;
+      } else {
+        let placed = false;
+        pos = targetPixel;
+        for (let r = 0; r < rows && !placed; r++) {
+          for (let c = 0; c < cols && !placed; c++) {
+            const candidate = gridToPixel(c, r);
+            if (!taken.some((t) => t.x === candidate.x && t.y === candidate.y)) {
+              pos = candidate;
+              placed = true;
+            }
+          }
+        }
+        if (!placed) pos = { x: 0, y: -9999 };
+      }
+
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const allPos = saved ? JSON.parse(saved) : {};
+        allPos[id] = pos;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(allPos));
+      } catch { /* ignore */ }
+    }
+
     onNewFile(id, "New File");
     closeContextMenu();
-  }, [onNewFile, closeContextMenu]);
+  }, [onNewFile, closeContextMenu, contextMenu, positions]);
 
   const handleDropFromFolder = useCallback((e: React.DragEvent) => {
     e.preventDefault();

@@ -1,6 +1,8 @@
 import { useState, useCallback, useRef, useMemo, forwardRef, useImperativeHandle } from "react";
 import { initDb, persistDb } from "../data/db";
 import { findItemsBySectionId, upsertItem } from "../data/models/section";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface TextEditorProps {
   sectionId: string;
@@ -8,6 +10,7 @@ interface TextEditorProps {
   onDbChange?: () => void;
   locked?: boolean;
   preview?: boolean;
+  itemId?: string;
 }
 
 export interface TextEditorHandle {
@@ -16,12 +19,13 @@ export interface TextEditorHandle {
   getText: () => string;
 }
 
-function loadItem(sectionId: string): string {
+function loadItem(sectionId: string, itemId?: string): string {
   const db = initDb();
   if (!db) return "";
   const items = findItemsBySectionId(db, sectionId);
   if (items.length === 0) return "";
-  const item = items[0]!;
+  const item = itemId ? items.find((i) => i.id === itemId) ?? items[0]! : items[0]!;
+  if (!item) return "";
   const lines: string[] = [];
   if (item.title) {
     for (const t of item.title.split(", ")) {
@@ -81,21 +85,9 @@ function parseDirectives(text: string) {
   };
 }
 
-function formatBody(body: string): string[] {
-  return body.split("\n").reduce((acc: string[], line) => {
-    if (line.trim() === "") {
-      if (acc.length > 0 && acc[acc.length - 1] !== "") acc.push("");
-    } else {
-      if (acc.length === 0 || acc[acc.length - 1] === "") acc.push(line);
-      else acc[acc.length - 1] += " " + line;
-    }
-    return acc;
-  }, []);
-}
-
 const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(
-  ({ sectionId, sectionLabel, onDbChange, locked, preview }, ref) => {
-    const [text, setText] = useState(() => loadItem(sectionId));
+  ({ sectionId, sectionLabel, onDbChange, locked, preview, itemId }, ref) => {
+    const [text, setText] = useState(() => loadItem(sectionId, itemId));
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const parsed = useMemo(() => parseDirectives(text), [text]);
 
@@ -104,8 +96,8 @@ const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(
       const db = initDb();
       if (!db) return;
       const items = findItemsBySectionId(db, sectionId);
-      if (items.length > 0) {
-        const item = items[0]!;
+      const item = itemId ? items.find((i) => i.id === itemId) : items[0];
+      if (item) {
         upsertItem(db, {
           id: item.id, section_id: item.section_id,
           title: p.title.length > 0 ? p.title.join(", ") : item.title,
@@ -130,7 +122,7 @@ const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(
       }
       persistDb();
       onDbChange?.();
-    }, [sectionId, sectionLabel, parsed, onDbChange]);
+    }, [sectionId, sectionLabel, parsed, onDbChange, itemId]);
 
     const selectAll = useCallback(() => {
       textareaRef.current?.select();
@@ -144,8 +136,7 @@ const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(
 
     if (locked || preview) {
       const { title, description, tags, meta } = parsed;
-      const bodyParagraphs = parsed.body ? formatBody(parsed.body) : [];
-      const hasContent = title.length > 0 || description.length > 0 || tags.length > 0 || Object.keys(meta).length > 0 || bodyParagraphs.length > 0;
+      const hasContent = title.length > 0 || description.length > 0 || tags.length > 0 || Object.keys(meta).length > 0 || !!parsed.body;
 
       return (
         <div className="window-content-inner" style={{ padding: "16px 20px" }}>
@@ -171,8 +162,38 @@ const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(
                 ))}
               </div>
             )}
-            {bodyParagraphs.map((p, i) =>
-              p === "" ? <br key={i} /> : <p key={i} className="editor-rendered-paragraph">{p}</p>
+            {parsed.body && (
+              <div className="content-body-card" style={{ marginTop: 12 }}>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    h1: ({ children }) => <h2 className="content-heading">{children}</h2>,
+                    h2: ({ children }) => <h3 className="content-subheading">{children}</h3>,
+                    h3: ({ children }) => <h4 className="content-subsubheading">{children}</h4>,
+                    h4: ({ children }) => <h5 className="content-subsubheading">{children}</h5>,
+                    h5: ({ children }) => <h6 className="content-subsubheading">{children}</h6>,
+                    h6: ({ children }) => <h6 className="content-subsubheading">{children}</h6>,
+                    p: ({ children }) => <p className="content-text">{children}</p>,
+                    ul: ({ children }) => <ul className="content-list">{children}</ul>,
+                    ol: ({ children }) => <ol className="content-list">{children}</ol>,
+                    li: ({ children }) => <li className="content-list-item">{children}</li>,
+                    pre: ({ children }) => <pre className="content-code-block">{children}</pre>,
+                    code: ({ children }) => <code className="content-inline-code">{children}</code>,
+                    blockquote: ({ children }) => <blockquote className="content-blockquote">{children}</blockquote>,
+                    a: ({ href, children }) => <a className="content-link" href={href} target="_blank" rel="noopener noreferrer">{children}</a>,
+                    img: ({ src, alt }) => <img className="content-image" src={src} alt={alt ?? ""} loading="lazy" />,
+                    hr: () => <hr className="content-hr" />,
+                    strong: ({ children }) => <strong className="content-strong">{children}</strong>,
+                    em: ({ children }) => <em className="content-em">{children}</em>,
+                    del: ({ children }) => <del className="content-del">{children}</del>,
+                    table: ({ children }) => <table className="content-table">{children}</table>,
+                    th: ({ children }) => <th className="content-th">{children}</th>,
+                    td: ({ children }) => <td className="content-td">{children}</td>,
+                  }}
+                >
+                  {parsed.body}
+                </ReactMarkdown>
+              </div>
             )}
             {!hasContent && <p className="editor-rendered-empty">Empty file</p>}
           </div>

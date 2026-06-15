@@ -10,6 +10,7 @@ export interface SectionRow {
 export interface ItemRow {
   id: string;
   section_id: string;
+  parent_item_id: string | null;
   title: string;
   description: string | null;
   date: string | null;
@@ -53,6 +54,28 @@ export function findItemsBySectionId(db: Database, sectionId: string): ItemRow[]
   return rows;
 }
 
+export function findRootItemsBySectionId(db: Database, sectionId: string): ItemRow[] {
+  const stmt = db.prepare("SELECT * FROM items WHERE section_id = ? AND parent_item_id IS NULL ORDER BY sort_order");
+  stmt.bind([sectionId]);
+  const rows: ItemRow[] = [];
+  while (stmt.step()) {
+    rows.push(stmt.getAsObject() as unknown as ItemRow);
+  }
+  stmt.free();
+  return rows;
+}
+
+export function findItemsByParentId(db: Database, parentId: string): ItemRow[] {
+  const stmt = db.prepare("SELECT * FROM items WHERE parent_item_id = ? ORDER BY sort_order");
+  stmt.bind([parentId]);
+  const rows: ItemRow[] = [];
+  while (stmt.step()) {
+    rows.push(stmt.getAsObject() as unknown as ItemRow);
+  }
+  stmt.free();
+  return rows;
+}
+
 export function upsertSection(
   db: Database,
   section: { id: string; label: string; type: "file" | "folder" | "terminal"; sort_order?: number },
@@ -80,12 +103,14 @@ export function upsertItem(
     body?: string;
     url?: string;
     meta?: Record<string, string>;
+    parent_item_id?: string;
     sort_order?: number;
   },
 ) {
+  const parentVal = item.parent_item_id ?? null;
   db.run(
-    `INSERT INTO items (id, section_id, title, description, date, tags, body, url, meta_json, sort_order)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO items (id, section_id, parent_item_id, title, description, date, tags, body, url, meta_json, sort_order)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        title = excluded.title,
        description = excluded.description,
@@ -94,10 +119,12 @@ export function upsertItem(
        body = excluded.body,
        url = excluded.url,
        meta_json = excluded.meta_json,
+       parent_item_id = excluded.parent_item_id,
        sort_order = excluded.sort_order`,
     [
       item.id,
       item.section_id,
+      parentVal,
       item.title,
       item.description ?? null,
       item.date ?? null,

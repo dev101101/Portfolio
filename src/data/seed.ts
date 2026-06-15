@@ -115,25 +115,41 @@ I wanted a system that stayed out of my way and let me configure everything exac
 
 My first Arch install took about 4 hours. I followed the [Arch Wiki Installation Guide](https://wiki.archlinux.org/title/Installation_guide) step by step:
 
+### Partitioning
+
 \`\`\`bash
-# Partitioning
 fdisk /dev/nvme0n1
 # Create root partition, swap, and /boot
+\`\`\`
 
-# Format
+### Format
+
+\`\`\`bash
 mkfs.ext4 /dev/nvme0n1p1
 mkswap /dev/nvme0n1p2
+\`\`\`
 
-# Mount
+### Mount
+
+\`\`\`bash
 mount /dev/nvme0n1p1 /mnt
+\`\`\`
 
-# Install base system
+### Install base system
+
+\`\`\`bash
 pacstrap -K /mnt base base-devel linux linux-firmware
+\`\`\`
 
-# Generate fstab
+### Generate fstab
+
+\`\`\`bash
 genfstab -U /mnt >> /mnt/etc/fstab
+\`\`\`
 
-# Chroot
+### Chroot
+
+\`\`\`bash
 arch-chroot /mnt
 \`\`\`
 
@@ -145,12 +161,16 @@ The Arch User Repository is what keeps me on Arch. Need a package that's not in 
 
 I use \`yay\` as my AUR helper:
 
+### Install yay
+
 \`\`\`bash
-# Install yay
 git clone https://aur.archlinux.org/yay.git
 cd yay && makepkg -si
+\`\`\`
 
-# Search and install from AUR
+### Search and install from AUR
+
+\`\`\`bash
 yay -S visual-studio-code-bin spotify google-chrome
 \`\`\`
 
@@ -282,14 +302,21 @@ Here's what I use daily:
 
 Not all code can be sent to cloud APIs. For client projects and proprietary code, I run local models through Ollama:
 
+### Install Ollama
+
 \`\`\`bash
-# Install Ollama
 curl -fsSL https://ollama.com/install.sh | sh
+\`\`\`
 
-# Pull a code model
+### Pull a code model
+
+\`\`\`bash
 ollama pull deepseek-coder:33b
+\`\`\`
 
-# Use it from the terminal
+### Use it from the terminal
+
+\`\`\`bash
 ollama run deepseek-coder:33b "Write a Rust function to parse JSON from stdin"
 \`\`\`
 
@@ -406,14 +433,21 @@ vim.keymap.set("n", "<leader>fb", "<cmd>Telescope buffers<CR>")
 
 [yazi](https://yazi.rs) is a blazing-fast file manager written in Rust. I use it for all file operations:
 
+### Install yazi
+
 \`\`\`bash
-# Install yazi
 cargo install yazi
+\`\`\`
 
-# Open in current directory
+### Open in current directory
+
+\`\`\`bash
 yazi
+\`\`\`
 
-# Open specific directory
+### Open specific directory
+
+\`\`\`bash
 yazi ~/Projects
 \`\`\`
 
@@ -635,13 +669,14 @@ Most businesses cannot afford an accountant and rely on handwritten notebooks, w
 
 The key insight is that every small business in Peru already has a smartphone and uses WhatsApp. Therefore, the AI interface must be WhatsApp — not a separate app that requires onboarding. The stack:
 
+### Architecture
+
 \`\`\`bash
-# Architecture
 WhatsApp Cloud API  ←  Node.js Webhook  ←  LLM (GPT-4 / Llama 3)  ←  SQLite
-                          ↓
-                   Voice-to-Text (Whisper)
-                          ↓
-                   Text-to-Speech (ElevenLabs)
+                      ↓
+               Voice-to-Text (Whisper)
+                      ↓
+               Text-to-Speech (ElevenLabs)
 \`\`\`
 
 The flow is simple: the owner sends a voice note saying "vendí tres cervezas y un paquete de arroz a 5 soles cada uno" — the AI transcribes it, categorizes it as a sale, generates an invoice, updates the ledger, and replies with a confirmation. No typing required.
@@ -767,8 +802,9 @@ The deciding factor was the **Arch Wiki**. It is not exaggeration to say that th
 
 Arch installation is famously manual. I timed mine:
 
+### Stage 1: Base system (45 minutes)
+
 \`\`\`bash
-# Stage 1: Base system (45 minutes)
 timedatectl set-ntp true
 fdisk /dev/nvme0n1  # Manual partitioning
 mkfs.ext4 /dev/nvme0n1p2
@@ -776,8 +812,11 @@ mount /dev/nvme0n1p2 /mnt
 pacstrap /mnt base linux linux-firmware vim sudo
 genfstab -U /mnt >> /mnt/etc/fstab
 arch-chroot /mnt
+\`\`\`
 
-# Stage 2: Configuration (30 minutes)
+### Stage 2: Configuration (30 minutes)
+
+\`\`\`bash
 ln -sf /usr/share/zoneinfo/America/Lima /etc/localtime
 hwclock --systohc
 echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
@@ -785,13 +824,19 @@ locale-gen
 echo "myhostname" > /etc/hostname
 passwd
 useradd -m -G wheel yaphets
+\`\`\`
 
-# Stage 3: Bootloader + DE (20 minutes)
+### Stage 3: Bootloader + DE (20 minutes)
+
+\`\`\`bash
 pacman -S grub efibootmgr
 grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
 grub-mkconfig -o /boot/grub/grub.cfg
+\`\`\`
 
-# Total: ~1.5 hours
+### Total: ~1.5 hours
+
+\`\`\`bash
 \`\`\`
 
 **Total time from bootable USB to working desktop with Niri: ~2.5 hours.** This is comparable to a Windows install (which takes ~1 hour + driver setup + reboot cycles), but the difference is that every component is documented and understood — there is no mystery.
@@ -855,8 +900,9 @@ The critical insight was **context preservation**. With tmux, I can:
 
 This is something no GUI desktop environment can match. Windows RDP, NoMachine, TeamViewer — none preserve state the way tmux does.
 
+### .bashrc: productivity aliases
+
 \`\`\`bash
-# .bashrc: productivity aliases
 alias dots='cd ~/.dotfiles && nvim'
 alias update='paru -Syu --noconfirm && flatpak update -y'
 alias temp='curl -s wttr.in/Lima?format=%t'
@@ -1148,8 +1194,9 @@ The most objective way to compare operating systems is through benchmarks. Conse
 
 These numbers were measured using \`hyperfine\` and \`perf\` on Linux, and Process Monitor + PowerShell on Windows:
 
+### Example: measuring kernel compile on Linux
+
 \`\`\`bash
-# Example: measuring kernel compile on Linux
 hyperfine --warmup 3 \
   "make -j$(nproc) defconfig && make -j$(nproc) -C /usr/src/linux" \
   --export-markdown kernel-benchmark.md
@@ -1169,11 +1216,15 @@ Windows 11 demands a minimum of 4GB RAM and 64GB storage just to idle. Linux dis
 
 This is perhaps the most visible daily difference. Consider installing a development environment:
 
-\`\`\`bash
-# Linux (Arch): one command, seconds
-pacman -S nodejs npm python rust go docker docker-compose
+### Linux (Arch): one command, seconds
 
-# Windows: multiple downloads, multiple installers, minutes of clicking
+\`\`\`bash
+pacman -S nodejs npm python rust go docker docker-compose
+\`\`\`
+
+### Windows: multiple downloads, multiple installers, minutes of clicking
+
+\`\`\`bash
 # 1. Download Node.js installer from website
 # 2. Download Python from python.org
 # 3. Download Rustup from rustup.rs

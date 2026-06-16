@@ -81,7 +81,7 @@ function resolveSectionPath(db: ReturnType<typeof initDb>, parts: string[]): Res
     if (!item) return { error: `No such item: "${parts[i]}" in path` };
     if (i < parts.length - 1) {
       const meta = item.meta_json ? safeJsonParse(item.meta_json) : null;
-      if (meta?.itemType !== "folder") return { error: `"${parts[i]}" is not a folder` };
+      if (meta?.['itemType'] !== "folder") return { error: `"${parts[i]}" is not a folder` };
     }
     parentId = item.id;
   }
@@ -166,7 +166,7 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
       if (items.length === 0) return { output: "(empty)" };
       return { output: items.map((i) => {
         const meta = i.meta_json ? safeJsonParse(i.meta_json) : null;
-        const icon = meta?.itemType === "folder" ? "📁 " : "📄 ";
+        const icon = meta?.['itemType'] === "folder" ? "📁 " : "📄 ";
         return icon + i.title + (i.url ? " -> " + i.url : "");
       }).join("\n") };
     }
@@ -218,7 +218,7 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
             const it = rootItems[j]!;
             const itLast = j === rootItems.length - 1;
             const meta = it.meta_json ? safeJsonParse(it.meta_json) : null;
-            lines.push((isLast ? "    " : "│   ") + (itLast ? "└── " : "├── ") + it.title + (meta?.itemType === "folder" ? "/" : ""));
+            lines.push((isLast ? "    " : "│   ") + (itLast ? "└── " : "├── ") + it.title + (meta?.['itemType'] === "folder" ? "/" : ""));
           }
         }
       } else {
@@ -371,7 +371,7 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
       saveItem(db, {
         id: `folder-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         section_id: r.sectionId,
-        parent_item_id: r.parentItemId,
+        parent_item_id: r.parentItemId ?? undefined,
         title: name,
         meta: { itemType: "folder" },
       });
@@ -392,7 +392,7 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
       saveItem(db, {
         id: `file-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         section_id: r.sectionId,
-        parent_item_id: r.parentItemId,
+        parent_item_id: r.parentItemId ?? undefined,
         title: name,
       });
       return { output: `File "${name}" created.`, didMutate: true };
@@ -419,12 +419,12 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
       saveItem(db, {
         id: srcItem.id,
         section_id: srcItem.section_id,
-        parent_item_id: dstR.parentItemId,
+        parent_item_id: dstR.parentItemId ?? undefined,
         title: srcItem.title,
         body: srcItem.body ?? undefined,
         description: srcItem.description ?? undefined,
         date: srcItem.date ?? undefined,
-        tags: srcItem.tags ? (safeJsonParse(srcItem.tags) as string[]) : undefined,
+        tags: srcItem.tags ? (safeJsonParse(srcItem.tags) as unknown as string[]) : undefined,
         url: srcItem.url ?? undefined,
         meta: srcItem.meta_json ? (safeJsonParse(srcItem.meta_json) as Record<string, string>) : undefined,
         sort_order: srcItem.sort_order,

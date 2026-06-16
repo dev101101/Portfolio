@@ -14,28 +14,28 @@ interface CardBlock {
 }
 
 const markdownComponents = {
-  h1: ({ children }: { children: ReactNode }) => <h2 className="content-heading">{children}</h2>,
-  h2: ({ children }: { children: ReactNode }) => <h3 className="content-subheading">{children}</h3>,
-  h3: ({ children }: { children: ReactNode }) => <h4 className="content-subsubheading">{children}</h4>,
-  h4: ({ children }: { children: ReactNode }) => <h5 className="content-subsubheading">{children}</h5>,
-  h5: ({ children }: { children: ReactNode }) => <h6 className="content-subsubheading">{children}</h6>,
-  h6: ({ children }: { children: ReactNode }) => <h6 className="content-subsubheading">{children}</h6>,
-  p: ({ children }: { children: ReactNode }) => <p className="content-text">{children}</p>,
-  ul: ({ children }: { children: ReactNode }) => <ul className="content-list">{children}</ul>,
-  ol: ({ children }: { children: ReactNode }) => <ol className="content-list">{children}</ol>,
-  li: ({ children }: { children: ReactNode }) => <li className="content-list-item">{children}</li>,
-  pre: ({ children }: { children: ReactNode }) => <pre className="content-code-block">{children}</pre>,
-  code: ({ children }: { children: ReactNode }) => <code className="content-inline-code">{children}</code>,
-  blockquote: ({ children }: { children: ReactNode }) => <blockquote className="content-blockquote">{children}</blockquote>,
-  a: ({ href, children }: { href?: string; children: ReactNode }) => <a className="content-link" href={href} target="_blank" rel="noopener noreferrer">{children}</a>,
+  h1: ({ children }: { children?: ReactNode }) => <h2 className="content-heading">{children}</h2>,
+  h2: ({ children }: { children?: ReactNode }) => <h3 className="content-subheading">{children}</h3>,
+  h3: ({ children }: { children?: ReactNode }) => <h4 className="content-subsubheading">{children}</h4>,
+  h4: ({ children }: { children?: ReactNode }) => <h5 className="content-subsubheading">{children}</h5>,
+  h5: ({ children }: { children?: ReactNode }) => <h6 className="content-subsubheading">{children}</h6>,
+  h6: ({ children }: { children?: ReactNode }) => <h6 className="content-subsubheading">{children}</h6>,
+  p: ({ children }: { children?: ReactNode }) => <p className="content-text">{children}</p>,
+  ul: ({ children }: { children?: ReactNode }) => <ul className="content-list">{children}</ul>,
+  ol: ({ children }: { children?: ReactNode }) => <ol className="content-list">{children}</ol>,
+  li: ({ children }: { children?: ReactNode }) => <li className="content-list-item">{children}</li>,
+  pre: ({ children }: { children?: ReactNode }) => <pre className="content-code-block">{children}</pre>,
+  code: ({ children }: { children?: ReactNode }) => <code className="content-inline-code">{children}</code>,
+  blockquote: ({ children }: { children?: ReactNode }) => <blockquote className="content-blockquote">{children}</blockquote>,
+  a: ({ href, children }: { href?: string; children?: ReactNode }) => <a className="content-link" href={href} target="_blank" rel="noopener noreferrer">{children}</a>,
   img: ({ src, alt }: { src?: string; alt?: string }) => <img className="content-image" src={src} alt={alt ?? ""} loading="lazy" />,
   hr: () => <hr className="content-hr" />,
-  strong: ({ children }: { children: ReactNode }) => <strong className="content-strong">{children}</strong>,
-  em: ({ children }: { children: ReactNode }) => <em className="content-em">{children}</em>,
-  del: ({ children }: { children: ReactNode }) => <del className="content-del">{children}</del>,
-  table: ({ children }: { children: ReactNode }) => <div style={{ overflowX: "auto" }}><table className="content-table">{children}</table></div>,
-  th: ({ children }: { children: ReactNode }) => <th className="content-th">{children}</th>,
-  td: ({ children }: { children: ReactNode }) => <td className="content-td">{children}</td>,
+  strong: ({ children }: { children?: ReactNode }) => <strong className="content-strong">{children}</strong>,
+  em: ({ children }: { children?: ReactNode }) => <em className="content-em">{children}</em>,
+  del: ({ children }: { children?: ReactNode }) => <del className="content-del">{children}</del>,
+  table: ({ children }: { children?: ReactNode }) => <div style={{ overflowX: "auto" }}><table className="content-table">{children}</table></div>,
+  th: ({ children }: { children?: ReactNode }) => <th className="content-th">{children}</th>,
+  td: ({ children }: { children?: ReactNode }) => <td className="content-td">{children}</td>,
 };
 
 function parseDirectives(body: string): { directives: Directive[]; cleanBody: string } {
@@ -228,7 +228,7 @@ function ContentPage({ item }: ContentPageProps) {
           {renderCardHeader({
             title: item.title,
             description: item.description,
-            metas: item.meta?.language ? [{ value: item.meta.language }] : undefined,
+            metas: item.meta?.['language'] ? [{ value: item.meta?.['language'] }] : undefined,
           })}
         </div>
       )}

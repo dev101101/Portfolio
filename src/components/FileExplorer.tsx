@@ -442,25 +442,14 @@ function FileExplorer({
             <>
               {/* Breadcrumb navigation */}
               {navStack.length > 0 && (
-                <div
-                  className="explorer-breadcrumb"
-                  style={{
-                    padding: "6px 12px",
-                    borderBottom: "1px solid var(--border-color, #ccc)",
-                    fontSize: "var(--font-size-xs)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
-                >
+                <div className="explorer-breadcrumb">
                   <span
                     className="explorer-breadcrumb-back"
                     onClick={handleNavigateBack}
-                    style={{ cursor: "pointer", fontWeight: "bold", color: "var(--accent-color, #06c)" }}
                   >
                     ← Back
                   </span>
-                  <span style={{ color: "var(--content-subtitle, #666)" }}>
+                  <span className="explorer-breadcrumb-path">
                     {navStack.map((n) => n.label).join(" › ")}
                   </span>
                 </div>

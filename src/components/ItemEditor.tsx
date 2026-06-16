@@ -55,7 +55,7 @@ function ItemEditor({ sectionId, itemName }: ItemEditorProps) {
 
   if (!db) {
     return (
-      <div className="window-content-inner" style={{ padding: 16 }}>
+      <div className="window-content-inner editor-loading-inner">
         <p>Loading...</p>
       </div>
     );
@@ -63,7 +63,7 @@ function ItemEditor({ sectionId, itemName }: ItemEditorProps) {
 
   return (
     <div
-      style={{ display: "flex", flexDirection: "column", height: "100%" }}
+      className="editor-layout"
       onKeyDown={handleKeyDown}
     >
       <div className="window-navbar">
@@ -74,7 +74,7 @@ function ItemEditor({ sectionId, itemName }: ItemEditorProps) {
           onSelectAll={handleSelectAll}
         />
       </div>
-      <div style={{ flex: 1, overflow: "auto", padding: 12, boxSizing: "border-box" }}>
+      <div className="editor-content">
         {preview ? (
           text ? (
             <ReactMarkdown

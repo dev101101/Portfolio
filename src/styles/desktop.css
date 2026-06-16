@@ -1,0 +1,189 @@
+/* ============================================================
+   DESKTOP
+   ============================================================ */
+.desktop {
+    position: relative;
+    flex: 1;
+    padding: 20px;
+    z-index: 0;
+}
+
+.desktop-wallpaper {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+}
+
+.desktop-wallpaper.loaded {
+    opacity: 1;
+}
+
+.desktop-icon {
+    position: absolute;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px;
+    border: 2px solid transparent;
+    cursor: grab;
+    transition: border-color 0.15s;
+    width: 90px;
+    height: 90px;
+}
+
+.desktop-icon:active {
+    cursor: grabbing;
+}
+
+.desktop-icon:hover {
+    background: var(--icon-hover);
+    border-color: var(--accent);
+}
+
+.folder-svg {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    color: var(--icon-color);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+    image-rendering: pixelated;
+}
+
+.desktop-icon-label {
+    font-size: var(--font-size-xs);
+    text-align: center;
+    line-height: 1.2;
+    color: var(--icon-label-color);
+    text-shadow: var(--icon-label-shadow);
+    word-break: break-word;
+    max-width: 80px;
+}
+
+.desktop-icon-input {
+    font-size: var(--font-size-xs);
+    text-align: center;
+    line-height: 1.2;
+    color: var(--icon-label-color);
+    text-shadow: var(--icon-label-shadow);
+    word-break: break-word;
+    max-width: 80px;
+    width: 80px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    padding: 2px 4px;
+    outline: none;
+    font-family: var(--font-family);
+}
+
+/* ============================================================
+   WALLPAPER EFFECTS
+   ============================================================ */
+.desktop::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.desktop::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Pixel wallpaper: grid + stars */
+[data-theme="pixel"] .desktop::before {
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+}
+
+[data-theme="pixel"] .desktop::after {
+    background: transparent;
+}
+
+@keyframes twinkle {
+    0% {
+        opacity: 0.4;
+    }
+    100% {
+        opacity: 0.9;
+    }
+}
+
+/* Terminal wallpaper: scanlines + glow */
+[data-theme="terminal"] .desktop::before {
+    background: repeating-linear-gradient(
+        transparent,
+        transparent 2px,
+        rgba(0, 255, 0, 0.03) 2px,
+        rgba(0, 255, 0, 0.03) 4px
+    );
+}
+
+[data-theme="terminal"] .desktop::after {
+    background: radial-gradient(
+        ellipse at 50% 100%,
+        rgba(0, 255, 0, 0.06) 0%,
+        transparent 60%
+    );
+}
+
+/* Classic wallpaper: subtle pattern */
+[data-theme="classic"] .desktop::before {
+    background-image: radial-gradient(
+        circle at 50% 50%,
+        rgba(255, 255, 255, 0.05) 1px,
+        transparent 1px
+    );
+    background-size: 40px 40px;
+}
+
+[data-theme="classic"] .desktop::after {
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(0, 0, 0, 0.1) 100%
+    );
+}
+
+/* Context Menu */
+.context-menu {
+    background: #2d2d2d;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 4px 0;
+    min-width: 160px;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+}
+
+.context-menu-item {
+    padding: 6px 16px;
+    cursor: pointer;
+    color: #eee;
+    font-size: 13px;
+    font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.context-menu-item.disabled {
+    cursor: default;
+    color: #666;
+}
+
+/* Wallpaper preload image (hidden) */
+.wallpaper-preload {
+    display: none;
+}

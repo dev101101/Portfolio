@@ -14,14 +14,6 @@ const WALLPAPERS: Record<string, string> = {
   modern: "/wallhaven-vmy7j8.webp",
 };
 
-function getGridCols() {
-  return Math.max(1, Math.floor(window.innerWidth / GRID_SIZE_X));
-}
-
-function getGridRows() {
-  return Math.max(1, Math.floor(window.innerHeight / GRID_SIZE_Y));
-}
-
 function snapToGrid(x: number, y: number) {
   return {
     col: Math.max(0, Math.round(x / GRID_SIZE_X)),
@@ -65,10 +57,24 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
     return pos;
   });
 
+  const [gridMetrics, setGridMetrics] = useState(() => ({
+    cols: Math.max(1, Math.floor(window.innerWidth / GRID_SIZE_X)),
+    rows: Math.max(1, Math.floor(window.innerHeight / GRID_SIZE_Y)),
+  }));
+
+  useEffect(() => {
+    const onResize = () => setGridMetrics({
+      cols: Math.max(1, Math.floor(window.innerWidth / GRID_SIZE_X)),
+      rows: Math.max(1, Math.floor(window.innerHeight / GRID_SIZE_Y)),
+    });
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   const allPositions = useMemo(() => {
     const folderIds = new Set(folders.map((f) => f.id));
-    const cols = getGridCols();
-    const rows = getGridRows();
+    const cols = gridMetrics.cols;
+    const rows = gridMetrics.rows;
     const next: Record<string, { x: number; y: number }> = {};
     for (const [id, pos] of Object.entries(positions)) {
       if (folderIds.has(id)) {
@@ -97,17 +103,20 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
       }
     }
     return next;
-  }, [folders, positions]);
+  }, [folders, positions, gridMetrics]);
 
   useEffect(() => {
-    const filtered: Record<string, { x: number; y: number }> = {};
-    const folderIds = new Set(folders.map((f) => f.id));
-    for (const [id, pos] of Object.entries(positions)) {
-      if (folderIds.has(id)) {
-        filtered[id] = pos;
+    const timer = setTimeout(() => {
+      const filtered: Record<string, { x: number; y: number }> = {};
+      const folderIds = new Set(folders.map((f) => f.id));
+      for (const [id, pos] of Object.entries(positions)) {
+        if (folderIds.has(id)) {
+          filtered[id] = pos;
+        }
       }
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+    }, 300);
+    return () => clearTimeout(timer);
   }, [positions, folders]);
 
   const moveIcon = useCallback((id: string, x: number, y: number) => {
@@ -116,8 +125,7 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
 
   const dropIcon = useCallback((id: string, x: number, y: number) => {
     const target = snapToGrid(x, y);
-    const cols = getGridCols();
-    const rows = getGridRows();
+    const { cols, rows } = gridMetrics;
     if (target.col < 0 || target.col >= cols || target.row < 0 || target.row >= rows) {
       return;
     }
@@ -148,7 +156,7 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
       const swapPixel = gridToPixel(origin.col, origin.row);
       return { ...prev, [id]: pixel, [occId]: swapPixel };
     });
-  }, [folders, onDropFileIntoFolder]);
+  }, [folders, onDropFileIntoFolder, gridMetrics]);
 
   const dragOriginRef = useRef({ col: 0, row: 0 });
 
@@ -198,8 +206,7 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
 
     if (contextMenu && contextMenu.type === "desktop") {
       const target = snapToGrid(contextMenu.x, contextMenu.y);
-      const cols = getGridCols();
-      const rows = getGridRows();
+      const { cols, rows } = gridMetrics;
       const taken = Object.values(positions);
       const targetPixel = gridToPixel(target.col, target.row);
       const inBounds = target.col >= 0 && target.col < cols && target.row >= 0 && target.row < rows;
@@ -223,17 +230,12 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
         if (!placed) pos = { x: 0, y: -9999 };
       }
 
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        const allPos = saved ? JSON.parse(saved) : {};
-        allPos[id] = pos;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(allPos));
-      } catch { /* ignore */ }
+      setPositions((prev) => ({ ...prev, [id]: pos }));
     }
 
     onNewFolder(id, "New Folder");
     closeContextMenu();
-  }, [onNewFolder, closeContextMenu, contextMenu, positions]);
+  }, [onNewFolder, closeContextMenu, contextMenu, positions, gridMetrics]);
 
   const handleNewFile = useCallback(() => {
     const id = `file-${Date.now()}`;
@@ -241,8 +243,7 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
 
     if (contextMenu && contextMenu.type === "desktop") {
       const target = snapToGrid(contextMenu.x, contextMenu.y);
-      const cols = getGridCols();
-      const rows = getGridRows();
+      const { cols, rows } = gridMetrics;
       const taken = Object.values(positions);
       const targetPixel = gridToPixel(target.col, target.row);
       const inBounds = target.col >= 0 && target.col < cols && target.row >= 0 && target.row < rows;
@@ -266,17 +267,12 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
         if (!placed) pos = { x: 0, y: -9999 };
       }
 
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        const allPos = saved ? JSON.parse(saved) : {};
-        allPos[id] = pos;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(allPos));
-      } catch { /* ignore */ }
+      setPositions((prev) => ({ ...prev, [id]: pos }));
     }
 
     onNewFile(id, "New File");
     closeContextMenu();
-  }, [onNewFile, closeContextMenu, contextMenu, positions]);
+  }, [onNewFile, closeContextMenu, contextMenu, positions, gridMetrics]);
 
   const handleDropFromFolder = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -292,34 +288,39 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
     } catch { /* ignore */ }
   }, [onDropItemFromFolder]);
 
+  const folderIcons = useMemo(() =>
+    folders.map((f) => {
+      const p = allPositions[f.id] ?? { x: 0, y: 0 };
+      const isRenaming = renamingId === f.id;
+      return (
+        <FolderIcon
+          key={f.id}
+          label={f.label}
+          type={f.type}
+          theme={theme}
+          position={p}
+          onMove={(x, y) => moveIcon(f.id, x, y)}
+          onDrop={(x, y) => dropIcon(f.id, x, y)}
+          onDragStart={() => { dragOriginRef.current = snapToGrid(p.x, p.y); }}
+          onDoubleClick={() => onOpenFolder(f.id)}
+          onContextMenu={(e) => handleIconContextMenu(e, f.id)}
+          isRenaming={isRenaming}
+          onRenameSubmit={(label) => handleRenameSubmit(f.id, label)}
+          onRenameCancel={() => setRenamingId(null)}
+          inputRef={isRenaming ? renamingInputRef : undefined}
+        />
+      );
+    }),
+    [folders, allPositions, renamingId, theme, moveIcon, dropIcon, onOpenFolder, handleIconContextMenu, handleRenameSubmit],
+  );
+
   return (
     <div className="desktop" role="region" aria-label="Desktop" onContextMenu={handleDesktopContextMenu} onDragOver={(e) => e.preventDefault()} onDrop={handleDropFromFolder}>
       <div key={`wp-${theme}`} className={`desktop-wallpaper ${wallpaperLoaded ? "loaded" : ""}`} aria-hidden="true" />
       {WALLPAPERS[theme] && (
-        <img key={`preload-${theme}`} src={WALLPAPERS[theme]!} onLoad={() => setWallpaperLoaded(true)} style={{ display: "none" }} alt="" />
+        <img key={`preload-${theme}`} src={WALLPAPERS[theme]!} onLoad={() => setWallpaperLoaded(true)} className="wallpaper-preload" alt="" />
       )}
-      {folders.map((f) => {
-        const p = allPositions[f.id] ?? { x: 0, y: 0 };
-        const isRenaming = renamingId === f.id;
-        return (
-          <FolderIcon
-            key={f.id}
-            label={f.label}
-            type={f.type}
-            theme={theme}
-            position={p}
-            onMove={(x, y) => moveIcon(f.id, x, y)}
-            onDrop={(x, y) => dropIcon(f.id, x, y)}
-            onDragStart={() => { dragOriginRef.current = snapToGrid(p.x, p.y); }}
-            onDoubleClick={() => onOpenFolder(f.id)}
-            onContextMenu={(e) => handleIconContextMenu(e, f.id)}
-            isRenaming={isRenaming}
-            onRenameSubmit={(label) => handleRenameSubmit(f.id, label)}
-            onRenameCancel={() => setRenamingId(null)}
-            inputRef={isRenaming ? renamingInputRef : undefined}
-          />
-        );
-      })}
+      {folderIcons}
       {contextMenu && contextMenu.type === "icon" && (
         <ContextMenu
           x={contextMenu.x}

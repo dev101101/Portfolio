@@ -162,7 +162,7 @@ const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(
       const hasContent = title.length > 0 || description.length > 0 || tags.length > 0 || Object.keys(meta).length > 0 || !!parsed.body;
 
       return (
-        <div className="window-content-inner" style={{ padding: "16px 20px" }}>
+        <div className="window-content-inner editor-preview-inner">
           {!hasContent && <p className="editor-rendered-empty">Empty file</p>}
           {hasContent && (
             <div className="editor-rendered">
@@ -194,7 +194,7 @@ const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(
                 </div>
               )}
               {parsed.body && (
-                <div className="content-body-card" style={{ marginTop: 12 }}>
+                <div className="content-body-card editor-body-card">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{

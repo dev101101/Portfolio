@@ -15,7 +15,19 @@ import { buildProfileDetail } from "./components/buildProfileDetail";
 import { getProfile, getSections, initDbAsync, persistDb, initDb } from "./data/db";
 import { saveSection, saveItem } from "./data/controllers/section";
 import { findItemsBySectionId, deleteSection, upsertItem, deleteItem } from "./data/models/section";
-import "./styles/App.css";
+import "./styles/variables.css";
+import "./styles/reset.css";
+import "./styles/app-shell.css";
+import "./styles/desktop.css";
+import "./styles/window.css";
+import "./styles/content.css";
+import "./styles/file-browser.css";
+import "./styles/file-explorer.css";
+import "./styles/taskbar.css";
+import "./styles/start-menu.css";
+import "./styles/terminal.css";
+import "./styles/selection.css";
+import "./styles/responsive.css";
 
 function createWindow(id: string, title: string, zIndex: number): WindowState {
   const maxW = Math.min(642, window.innerWidth * 0.92);
@@ -57,7 +69,6 @@ function App() {
   const [windows, setWindows] = useState<Record<string, WindowState>>(INITIAL_WINDOWS);
   const windowsRef = useRef(windows);
   useEffect(() => { windowsRef.current = windows; }, [windows]);
-  const [, setNextZ] = useState(0);
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("portfolio-theme") || "pixel";
   });
@@ -89,6 +100,12 @@ function App() {
     dbFolders.push({ id: "terminal", label: "Terminal", type: "terminal" });
     return dbFolders;
   }, [dbReady, refreshKey]);
+
+  const folderMap = useMemo(() => {
+    const map = new Map<string, Folder>();
+    for (const f of folders) map.set(f.id, f);
+    return map;
+  }, [folders]);
 
   const [maxFolders, setMaxFolders] = useState(getDesktopCapacity);
   useEffect(() => {
@@ -136,8 +153,6 @@ function App() {
         });
         return;
       }
-
-      setNextZ((prev) => prev + 1);
 
       setWindows((prev) => {
         const w = prev[id];
@@ -201,7 +216,6 @@ function App() {
         const maxZ = Math.max(...Object.values(prev).map((w) => w.zIndex));
         return { ...prev, [id]: { ...createWindow(id, title, maxZ + 1), position: pos } };
       });
-      setNextZ((prev) => prev + 1);
     },
     [basePos],
   );
@@ -230,39 +244,38 @@ function App() {
       const maxZ = Math.max(...Object.values(prev).map((w) => w.zIndex));
       return { ...prev, [id]: { ...createWindow(id, itemName, maxZ + 1), position: pos } };
     });
-    setNextZ((prev) => prev + 1);
   }, [basePos]);
 
   const onOpenHelp = useCallback(() => {
     const helpContent = (
-      <div className="window-content-inner" style={{ padding: "16px 20px", fontSize: "var(--font-size-sm)", lineHeight: 1.7, color: "var(--content-text)" }}>
-        <h2 style={{ margin: "0 0 16px 0", fontSize: "var(--font-size)", color: "var(--content-heading)" }}>About Text Editor</h2>
-        <p style={{ marginBottom: 12 }}>The Text Editor opens when you double-click or open a file. It has two modes: <strong>Preview</strong> (markdown rendered) and <strong>Edit</strong> (raw textarea).</p>
+      <div className="help-inner">
+        <h2 className="help-heading">About Text Editor</h2>
+        <p className="help-paragraph">The Text Editor opens when you double-click or open a file. It has two modes: <strong>Preview</strong> (markdown rendered) and <strong>Edit</strong> (raw textarea).</p>
 
-        <h3 style={{ margin: "16px 0 8px 0", fontSize: "var(--font-size-sm)", color: "var(--content-heading)" }}>📂 File Menu</h3>
-        <ul style={{ marginBottom: 8 }}>
-          <li><strong>Save</strong> (<code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>Ctrl+S</code>) — saves content to database</li>
+        <h3 className="help-subheading">📂 File Menu</h3>
+        <ul className="help-list">
+          <li><strong>Save</strong> (<code className="help-inline-code">Ctrl+S</code>) — saves content to database</li>
           <li><strong>Preview / Edit</strong> — toggles between rendered preview and raw textarea</li>
           <li><strong>Save Forever</strong> — saves and locks the file as read-only</li>
         </ul>
 
-        <h3 style={{ margin: "16px 0 8px 0", fontSize: "var(--font-size-sm)", color: "var(--content-heading)" }}>✂️ Selection Menu</h3>
-        <ul style={{ marginBottom: 8 }}>
-          <li><strong>Select All</strong> (<code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>Ctrl+A</code>) — selects all text in the editor</li>
+        <h3 className="help-subheading">✂️ Selection Menu</h3>
+        <ul className="help-list">
+          <li><strong>Select All</strong> (<code className="help-inline-code">Ctrl+A</code>) — selects all text in the editor</li>
         </ul>
 
-        <h3 style={{ margin: "16px 0 8px 0", fontSize: "var(--font-size-sm)", color: "var(--content-heading)" }}>📋 Directives</h3>
-        <p style={{ marginBottom: 4 }}>Write these at the top of your file to add metadata:</p>
-        <ul style={{ marginBottom: 8 }}>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>[title: My Title]</code> — section title (multiple allowed)</li>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>[description: Text...]</code> — short description (multiple allowed)</li>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>[tags: tag1, tag2]</code> — skill tags</li>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>[meta: key=value]</code> — custom key-value pairs</li>
+        <h3 className="help-subheading">📋 Directives</h3>
+        <p className="help-paragraph-sm">Write these at the top of your file to add metadata:</p>
+        <ul className="help-list">
+          <li><code className="help-inline-code">[title: My Title]</code> — section title (multiple allowed)</li>
+          <li><code className="help-inline-code">[description: Text...]</code> — short description (multiple allowed)</li>
+          <li><code className="help-inline-code">[tags: tag1, tag2]</code> — skill tags</li>
+          <li><code className="help-inline-code">[meta: key=value]</code> — custom key-value pairs</li>
         </ul>
 
-        <h3 style={{ margin: "16px 0 8px 0", fontSize: "var(--font-size-sm)", color: "var(--content-heading)" }}>📝 Markdown Reference</h3>
-        <p style={{ marginBottom: 4 }}>Everything below the directives is rendered as GitHub-Flavored Markdown:</p>
-        <ul style={{ marginBottom: 8 }}>
+        <h3 className="help-subheading">📝 Markdown Reference</h3>
+        <p className="help-paragraph-sm">Everything below the directives is rendered as GitHub-Flavored Markdown:</p>
+        <ul className="help-list">
           <li><strong># Heading</strong> → <strong>## Heading</strong> → <strong>###### Heading</strong> — section headings (h1–h6)</li>
           <li><strong>**bold**</strong>, <strong>*italic*</strong>, <strong>~~strikethrough~~</strong> — text emphasis</li>
           <li><strong>- item</strong> or <strong>1. item</strong> — unordered / ordered lists</li>
@@ -273,12 +286,12 @@ function App() {
           <li><strong>&gt; quote</strong> — blockquotes, <strong>---</strong> — horizontal rules</li>
         </ul>
 
-        <h3 style={{ margin: "16px 0 8px 0", fontSize: "var(--font-size-sm)", color: "var(--content-heading)" }}>⌨️ Shortcuts</h3>
+        <h3 className="help-subheading">⌨️ Shortcuts</h3>
         <ul>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>Ctrl+S</code> — save file</li>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>Ctrl+A</code> — select all text</li>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>Enter</code> — confirm / save rename</li>
-          <li><code style={{ background: "rgba(0,0,0,0.06)", padding: "1px 6px", borderRadius: 3 }}>Escape</code> — cancel rename</li>
+          <li><code className="help-inline-code">Ctrl+S</code> — save file</li>
+          <li><code className="help-inline-code">Ctrl+A</code> — select all text</li>
+          <li><code className="help-inline-code">Enter</code> — confirm / save rename</li>
+          <li><code className="help-inline-code">Escape</code> — cancel rename</li>
         </ul>
       </div>
     );
@@ -474,11 +487,11 @@ function App() {
 
   return (
     <div className="app" role="application" aria-label="Portfolio Desktop">
-      <Desktop key={`desktop-${theme}-${refreshKey}`} folders={folders} theme={theme} onOpenFolder={openFolder} onRenameSection={onRenameSection} onDeleteSection={onDeleteSection} onNewFolder={onNewFolder} onNewFile={onNewFile} onRefresh={onDbChange} onDropFileIntoFolder={onDropFileIntoFolder} onDropItemFromFolder={onDropItemFromFolder} />
+      <Desktop key={`desktop-${theme}`} folders={folders} theme={theme} onOpenFolder={openFolder} onRenameSection={onRenameSection} onDeleteSection={onDeleteSection} onNewFolder={onNewFolder} onNewFile={onNewFile} onRefresh={onDbChange} onDropFileIntoFolder={onDropFileIntoFolder} onDropItemFromFolder={onDropItemFromFolder} />
       {windowList
         .filter((w) => w.isOpen)
         .map((w) => {
-          const section = folders.find((f) => f.id === w.id);
+          const section = folderMap.get(w.id);
           const isFileSection = section && section.type === "file";
           const isUnlockedFile = isFileSection && !lockedSections.has(w.id);
           const isLockedFile = isFileSection && lockedSections.has(w.id);

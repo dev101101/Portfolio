@@ -48,18 +48,8 @@ function ContextMenu({ x, y, actions, onClose }: ContextMenuProps) {
       ref={ref}
       role="menu"
       aria-label="Context menu"
-      style={{
-        position: "fixed",
-        left: clampedX,
-        top: clampedY,
-        zIndex: 9999,
-        background: "#2d2d2d",
-        border: "1px solid #555",
-        borderRadius: 4,
-        padding: "4px 0",
-        minWidth: 160,
-        boxShadow: "2px 2px 8px rgba(0,0,0,0.5)",
-      }}
+      className="context-menu"
+      style={{ position: "fixed", left: clampedX, top: clampedY, zIndex: 9999 }}
       onClick={(e) => e.stopPropagation()}
       onContextMenu={(e) => e.preventDefault()}
     >
@@ -80,13 +70,7 @@ function ContextMenu({ x, y, actions, onClose }: ContextMenuProps) {
               onClose();
             }
           }}
-          style={{
-            padding: "6px 16px",
-            cursor: a.disabled ? "default" : "pointer",
-            color: a.disabled ? "#666" : "#eee",
-            fontSize: 13,
-            fontFamily: '"Segoe UI", system-ui, sans-serif',
-          }}
+          className={"context-menu-item" + (a.disabled ? " disabled" : "")}
           onMouseEnter={(e) => { if (!a.disabled) e.currentTarget.style.background = "#094771"; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
         >

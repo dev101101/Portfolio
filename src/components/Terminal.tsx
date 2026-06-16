@@ -465,10 +465,10 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
 function Prompt({ cwd }: { cwd: string }) {
   return (
     <span>
-      <span style={{ color: "#00aa00" }}>user@portfolio</span>
-      <span style={{ color: "#fff" }}>:</span>
-      <span style={{ color: "#0055ff" }}>{cwd}</span>
-      <span style={{ color: "#fff" }}>$ </span>
+      <span className="terminal-prompt-user">user@portfolio</span>
+      <span className="terminal-prompt-sep">:</span>
+      <span className="terminal-prompt-cwd">{cwd}</span>
+      <span className="terminal-prompt-symbol">$ </span>
     </span>
   );
 }
@@ -618,7 +618,7 @@ function Terminal({ onClose, onDbChange, maxFolders = 999 }: TerminalProps) {
       aria-live="polite"
       onClick={() => inputRef.current?.focus()}
     >
-      <div className="terminal-output" style={{ userSelect: "text" }}>
+      <div className="terminal-output">
         {history.map((entry, i) => (
           <div key={i}>
             {entry.input !== "" && (
@@ -628,12 +628,12 @@ function Terminal({ onClose, onDbChange, maxFolders = 999 }: TerminalProps) {
               </div>
             )}
             {entry.output !== "" && (
-              <div style={{ marginBottom: 4, whiteSpace: "pre-wrap" }}>{entry.output}</div>
+              <div className="terminal-history-output">{entry.output}</div>
             )}
           </div>
         ))}
       </div>
-      <div style={{ display: "flex", alignItems: "center" }} onClick={() => inputRef.current?.focus()}>
+      <div className="terminal-input-line" onClick={() => inputRef.current?.focus()}>
         <Prompt cwd={cwd} />
         <input
           ref={inputRef}
@@ -642,16 +642,7 @@ function Terminal({ onClose, onDbChange, maxFolders = 999 }: TerminalProps) {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           aria-label="Terminal input"
-          style={{
-            background: "transparent",
-            border: "none",
-            color: "#00ff00",
-            fontFamily: '"Share Tech Mono", "Courier New", monospace',
-            fontSize: 13,
-            outline: "none",
-            flex: 1,
-            caretColor: "#00ff00",
-          }}
+          className="terminal-input-field"
         />
       </div>
     </div>

@@ -1,0 +1,164 @@
+/* ============================================================
+   RESPONSIVE / MOBILE
+   ============================================================ */
+@media (max-width: 768px) {
+    .desktop {
+        padding: 10px;
+    }
+
+    .window {
+        max-width: calc(100vw - 12px) !important;
+    }
+
+    .desktop-icon {
+        width: 72px;
+        height: 72px;
+        padding: 6px;
+    }
+
+    .folder-svg {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+    }
+
+    .desktop-icon-label {
+        font-size: 10px;
+        max-width: 64px;
+    }
+
+    .window {
+        min-width: 260px;
+        min-height: 160px;
+    }
+
+    .taskbar {
+        height: 36px;
+        padding: 0 4px;
+        gap: 2px;
+    }
+
+    .taskbar-start {
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+
+    .taskbar-item {
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+
+    .clock {
+        font-size: 10px;
+        padding: 0 6px;
+    }
+
+    .start-menu {
+        bottom: 40px;
+        min-width: 180px;
+    }
+
+    .explorer-sidebar {
+        width: 120px;
+    }
+
+    .explorer-sidebar-item {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    .explorer .folder-svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .window-content-inner {
+        padding: 10px 12px;
+    }
+
+    .window-content-inner h1 {
+        font-size: 15px;
+    }
+
+    .window-content-inner h2 {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .window {
+        max-width: calc(100vw - 8px) !important;
+        min-width: 200px;
+    }
+
+    .desktop-icon {
+        width: 60px;
+        height: 60px;
+        padding: 4px;
+    }
+
+    .folder-svg {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+    }
+
+    .desktop-icon-label {
+        font-size: 9px;
+        max-width: 52px;
+    }
+
+    .taskbar-items {
+        display: none;
+    }
+
+    .taskbar-start {
+        flex: 1;
+        text-align: center;
+    }
+
+    .taskbar-apps {
+        flex: 1;
+        text-align: center;
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+
+    .apps-menu {
+        left: 4px;
+        right: 4px;
+        min-width: unset;
+    }
+
+    .explorer-sidebar {
+        width: 90px;
+    }
+
+    .explorer-sidebar-item span {
+        display: none;
+    }
+
+    .explorer-sidebar-item {
+        justify-content: center;
+        padding: 6px;
+    }
+
+    .filebrowser-item {
+        padding: 8px 10px;
+        gap: 8px;
+    }
+
+    .content-card {
+        padding: 10px;
+    }
+
+    .content-body-card {
+        padding: 10px 12px;
+    }
+
+    .start-menu {
+        left: 4px;
+        right: 4px;
+        min-width: unset;
+    }
+}

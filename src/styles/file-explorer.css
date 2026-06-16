@@ -1,0 +1,101 @@
+/* ============================================================
+   FILE EXPLORER
+   ============================================================ */
+.explorer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.explorer-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.explorer-sidebar {
+    width: 180px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    border-right: 2px solid var(--card-border);
+    padding: 6px 0;
+    background: var(--card-bg);
+}
+
+.explorer-sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    font-size: var(--font-size-sm);
+    color: var(--content-text);
+    cursor: pointer;
+    transition: background 0.1s;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+}
+
+.explorer .folder-svg {
+    width: 24px;
+    height: 24px;
+}
+
+.explorer-sidebar-item:hover {
+    background: var(--card-bg);
+}
+
+.explorer-sidebar-item.active {
+    background: var(--card-border);
+    font-weight: 600;
+}
+
+[data-theme="terminal"] .explorer-sidebar-item.active {
+    background: #003300;
+}
+
+[data-theme="pixel"] .explorer-sidebar {
+    background: #efe5d3;
+}
+
+[data-theme="classic"] .explorer-sidebar {
+    background: #ffffff;
+    border-right: 2px solid #aaaaaa;
+}
+
+[data-theme="modern"] .explorer-sidebar {
+    background: #ffffff;
+}
+
+[data-theme="terminal"] .explorer-sidebar {
+    background: #000000;
+}
+
+.explorer-content {
+    flex: 1;
+    overflow: hidden;
+    background: var(--window-bg);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Explorer breadcrumb */
+.explorer-breadcrumb {
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--border-color, #ccc);
+    font-size: var(--font-size-xs);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.explorer-breadcrumb-back {
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--accent-color, #06c);
+}
+
+.explorer-breadcrumb-path {
+    color: var(--content-subtitle, #666);
+}

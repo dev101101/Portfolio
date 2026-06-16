@@ -22,36 +22,15 @@ class ErrorBoundary extends Component<Props, State> {
   override render() {
     if (this.state.hasError) {
       return (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100vh",
-            background: "#0f0c29",
-            color: "#e8dcc8",
-            fontFamily: '"VT323", monospace',
-            padding: 24,
-            textAlign: "center",
-          }}
-        >
+        <div className="error-container">
           <div>
-            <h1 style={{ fontSize: 24, marginBottom: 12 }}>Something went wrong</h1>
-            <p style={{ fontSize: 16, color: "#95a5a6" }}>
+            <h1 className="error-title">Something went wrong</h1>
+            <p className="error-message">
               {this.state.error?.message ?? "An unexpected error occurred."}
             </p>
             <button
               onClick={() => window.location.reload()}
-              style={{
-                marginTop: 20,
-                padding: "8px 20px",
-                background: "#2c3e50",
-                color: "#e8dcc8",
-                border: "2px solid #f1c40f",
-                cursor: "pointer",
-                fontFamily: '"VT323", monospace',
-                fontSize: 16,
-              }}
+              className="error-reload-btn"
             >
               Reload
             </button>

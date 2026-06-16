@@ -8,48 +8,20 @@ export function buildProfileDetail(profile: Profile): ReactNode {
     <div
       key="avatar"
       className="about-card"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 20,
-        padding: 20,
-        background: "var(--window-bg)",
-        border: "var(--window-border)",
-        boxShadow: "var(--window-shadow)",
-      }}
     >
       <img
         className="about-avatar"
         src={profile.avatar}
         alt={profile.name}
       />
-      <div style={{ minWidth: 0 }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          <h1
-            style={{
-              margin: 0,
-              letterSpacing: 0,
-              fontSize: "auto",
-            }}
-          >
+      <div className="about-card-text">
+        <div className="about-card-header-row">
+          <h1 className="about-name-heading">
             {profile.name}
           </h1>
         </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            marginTop: 2,
-          }}
-        >
-          <p className="about-subtitle" style={{ margin: 0 }}>
+        <div className="about-subtitle-row">
+          <p className="about-subtitle">
             {profile.tagline}
           </p>
           <a
@@ -69,7 +41,7 @@ export function buildProfileDetail(profile: Profile): ReactNode {
     parts.push(
       <div
         key="bio"
-        style={{ display: "flex", flexDirection: "column", gap: 12 }}
+        className="about-bio"
       >
         {profile.bio.split("\n\n").map((p, i) => (
           <p key={i}>{p}</p>
@@ -81,7 +53,7 @@ export function buildProfileDetail(profile: Profile): ReactNode {
   if (profile.skills.length > 0) {
     parts.push(
       <section key="skills">
-        <h2 style={{ marginTop: 0 }}>Skills</h2>
+        <h2 className="skills-heading">Skills</h2>
         <div className="skill-list">
           {profile.skills.map((skill) => (
             <span key={skill} className="skill-tag">
@@ -94,7 +66,7 @@ export function buildProfileDetail(profile: Profile): ReactNode {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <div className="about-container">
       {parts}
     </div>
   );

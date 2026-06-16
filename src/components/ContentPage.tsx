@@ -33,7 +33,7 @@ const markdownComponents = {
   strong: ({ children }: { children?: ReactNode }) => <strong className="content-strong">{children}</strong>,
   em: ({ children }: { children?: ReactNode }) => <em className="content-em">{children}</em>,
   del: ({ children }: { children?: ReactNode }) => <del className="content-del">{children}</del>,
-  table: ({ children }: { children?: ReactNode }) => <div style={{ overflowX: "auto" }}><table className="content-table">{children}</table></div>,
+  table: ({ children }: { children?: ReactNode }) => <div className="content-table-wrapper"><table className="content-table">{children}</table></div>,
   th: ({ children }: { children?: ReactNode }) => <th className="content-th">{children}</th>,
   td: ({ children }: { children?: ReactNode }) => <td className="content-td">{children}</td>,
 };
@@ -127,7 +127,7 @@ function renderCardHeader(opts: {
       {description && <p className="content-page-desc">{description}</p>}
       {metas?.map((m, i) => <span key={i} className="content-page-lang">{m.value}</span>)}
       {tagsStr && (
-        <div className="content-tags" style={{ marginTop: 2 }}>
+        <div className="content-tags">
           {tagsStr.split(",").map((t) => t.trim()).filter(Boolean).map((t) => <span key={t} className="skill-tag">{t}</span>)}
         </div>
       )}
@@ -179,7 +179,7 @@ function renderCardBlocks(blocks: CardBlock[]): ReactNode[] {
       <div className="content-card" key={`card-${bi}`}>
         {header}
         {block.body && (
-          <div className="content-body-card" style={header ? { marginTop: 0 } : undefined}>
+          <div className={"content-body-card" + (header ? " content-body-card--no-header" : "")}>
             <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
               {block.body}
             </ReactMarkdown>
@@ -214,9 +214,9 @@ function ContentPage({ item }: ContentPageProps) {
   return (
     <div className="content-page">
       {item.date && item.meta?.["event"] && (
-        <div className="talk-meta" style={{ marginBottom: 4 }}>
+        <div className="talk-meta talk-meta-compact">
           <span className="talk-event">{item.meta["event"]}</span>
-          <span className="talk-date" style={{ marginLeft: 12 }}>{item.date}</span>
+          <span className="talk-date talk-date-ml">{item.date}</span>
         </div>
       )}
       {item.date && !item.meta?.["event"] && (

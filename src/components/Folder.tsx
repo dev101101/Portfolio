@@ -220,30 +220,12 @@ function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisab
         return (
         <div
           className="folder-context-menu"
-          style={{
-            position: "fixed",
-            left: cx,
-            top: cy,
-            zIndex: 99999,
-            background: "var(--menu-bg, #fff)",
-            border: "1px solid var(--menu-border, #999)",
-            borderRadius: 4,
-            boxShadow: "2px 2px 6px rgba(0,0,0,0.15)",
-            padding: "4px 0",
-            minWidth: 140,
-            fontSize: "var(--font-size-sm)",
-            fontFamily: "var(--font-family)",
-          }}
+          style={{ left: cx, top: cy }}
           onClick={closeContextMenu}
         >
           <div
             className="folder-context-item"
             onClick={handleNewFile}
-            style={{
-              padding: "6px 16px",
-              cursor: "pointer",
-              color: "var(--menu-text, #000)",
-            }}
             onMouseEnter={(e) => { (e.target as HTMLElement).style.background = "var(--menu-hover-bg, #e0e0e0)"; }}
             onMouseLeave={(e) => { (e.target as HTMLElement).style.background = "transparent"; }}
           >
@@ -252,11 +234,6 @@ function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisab
           <div
             className="folder-context-item"
             onClick={handleNewFolder}
-            style={{
-              padding: "6px 16px",
-              cursor: "pointer",
-              color: "var(--menu-text, #000)",
-            }}
             onMouseEnter={(e) => { (e.target as HTMLElement).style.background = "var(--menu-hover-bg, #e0e0e0)"; }}
             onMouseLeave={(e) => { (e.target as HTMLElement).style.background = "transparent"; }}
           >
@@ -274,30 +251,12 @@ function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisab
         return (
         <div
           className="folder-context-menu"
-          style={{
-            position: "fixed",
-            left: icx,
-            top: icy,
-            zIndex: 99999,
-            background: "var(--menu-bg, #fff)",
-            border: "1px solid var(--menu-border, #999)",
-            borderRadius: 4,
-            boxShadow: "2px 2px 6px rgba(0,0,0,0.15)",
-            padding: "4px 0",
-            minWidth: 120,
-            fontSize: "var(--font-size-sm)",
-            fontFamily: "var(--font-family)",
-          }}
+          style={{ left: icx, top: icy }}
           onClick={closeItemContextMenu}
         >
           <div
             className="folder-context-item"
             onClick={handleItemOpen}
-            style={{
-              padding: "6px 16px",
-              cursor: "pointer",
-              color: "var(--menu-text, #000)",
-            }}
             onMouseEnter={(e) => { (e.target as HTMLElement).style.background = "var(--menu-hover-bg, #e0e0e0)"; }}
             onMouseLeave={(e) => { (e.target as HTMLElement).style.background = "transparent"; }}
           >
@@ -306,11 +265,6 @@ function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisab
           <div
             className="folder-context-item"
             onClick={handleItemDelete}
-            style={{
-              padding: "6px 16px",
-              cursor: "pointer",
-              color: "var(--menu-text, #000)",
-            }}
             onMouseEnter={(e) => { (e.target as HTMLElement).style.background = "var(--menu-hover-bg, #e0e0e0)"; }}
             onMouseLeave={(e) => { (e.target as HTMLElement).style.background = "transparent"; }}
           >
@@ -385,7 +339,7 @@ function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisab
             <div>
               <div className="filebrowser-item-name" title={item.name}>{item.name}</div>
               {item.description && (
-                <div style={{ fontSize: "var(--font-size-xs)", color: "var(--content-subtitle)", marginTop: 2 }}>
+                <div className="filebrowser-item-desc">
                   {item.description}
                 </div>
               )}

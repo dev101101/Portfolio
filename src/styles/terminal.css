@@ -1,0 +1,70 @@
+/* ============================================================
+   TERMINAL
+   ============================================================ */
+.terminal {
+    background: #0a0a0a !important;
+    color: #00ff00;
+    font-family: "Share Tech Mono", "Courier New", monospace;
+    font-size: 13px;
+    cursor: text;
+    padding: 12px;
+    overflow-y: auto !important;
+}
+
+.terminal-output {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    min-height: 0;
+    user-select: text;
+}
+
+.terminal-output ::selection {
+    background: #00ff00;
+    color: #000;
+}
+
+.terminal::-webkit-scrollbar-thumb {
+    background: #333;
+}
+
+.terminal::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Terminal prompt spans */
+.terminal-prompt-user {
+    color: #00aa00;
+}
+
+.terminal-prompt-sep {
+    color: #fff;
+}
+
+.terminal-prompt-cwd {
+    color: #0055ff;
+}
+
+.terminal-prompt-symbol {
+    color: #fff;
+}
+
+.terminal-history-output {
+    margin-bottom: 4px;
+    white-space: pre-wrap;
+}
+
+.terminal-input-line {
+    display: flex;
+    align-items: center;
+}
+
+.terminal-input-field {
+    background: transparent;
+    border: none;
+    color: #00ff00;
+    font-family: "Share Tech Mono", "Courier New", monospace;
+    font-size: 13px;
+    outline: none;
+    flex: 1;
+    caret-color: #00ff00;
+}

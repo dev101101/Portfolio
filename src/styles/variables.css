@@ -1,0 +1,314 @@
+/* ============================================================
+   THEME VARIABLES
+   ============================================================ */
+
+/* ----- Pixel (default) ----- */
+[data-theme="pixel"],
+.app {
+    --font-family: "VT323", "Courier New", monospace;
+    --font-size: 16px;
+    --font-size-sm: 14px;
+    --font-size-xs: 12px;
+    --heading-font: "Press Start 2P", monospace;
+
+    background: #1a1a2e;
+
+    --taskbar-bg: #1a1a2e;
+    --taskbar-text: #c8d6e5;
+    --taskbar-hover: rgba(255, 255, 255, 0.12);
+    --taskbar-active: rgba(255, 255, 255, 0.2);
+    --taskbar-start-bg: #2c3e50;
+    --taskbar-start-hover: #34495e;
+    --taskbar-item-bg: rgba(255, 255, 255, 0.06);
+    --taskbar-border: rgba(255, 255, 255, 0.06);
+
+    --window-bg: #e8dcc8;
+    --window-border: 3px solid #2c3e50;
+    --window-shadow: 6px 6px 0 rgba(0, 0, 0, 0.4);
+    --window-radius: 0;
+    --window-title-bg: linear-gradient(90deg, #2c3e50, #34495e);
+    --window-title-bg-active: linear-gradient(90deg, #3d5a80, #4a6fa5);
+    --window-title-text: #e8dcc8;
+    --window-title-font: "Press Start 2P", monospace;
+    --window-title-size: 9px;
+
+    --win-btn-close: #e74c3c;
+    --win-btn-min: #f1c40f;
+    --win-btn-max: #2ecc71;
+
+    --icon-color: #f1c40f;
+    --icon-hover: rgba(255, 255, 255, 0.15);
+    --icon-label-color: #ffffff;
+    --icon-label-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+
+    --content-text: #2c3e50;
+    --content-heading: #1a1a2e;
+    --content-subtitle: #7f8c8d;
+    --content-link: #2980b9;
+    --content-link-hover: #3498db;
+
+    --card-bg: #f5efe3;
+    --card-border: 2px solid #bdc3c7;
+    --card-hover-border: 2px solid #2c3e50;
+    --code-bg: rgba(0, 0, 0, 0.06);
+
+    --tag-bg: #2c3e50;
+    --tag-text: #ecf0f1;
+
+    --accent: #e67e22;
+
+    --scrollbar-bg: #d5ccb8;
+    --scrollbar-thumb: #95a5a6;
+    --scrollbar-hover: #7f8c8d;
+
+    --resize-handle-color: #7f8c8d;
+    --selection-bg: #e67e22;
+
+    --start-menu-bg: #1a1a2e;
+    --start-menu-border: 3px solid #2c3e50;
+    --start-menu-title: #e8dcc8;
+    --start-menu-item-hover: rgba(255, 255, 255, 0.1);
+    --start-menu-item-selected: rgba(230, 126, 34, 0.3);
+}
+
+/* Pixel desktop background image */
+[data-theme="pixel"] .desktop {
+    background-color: #6b3465;
+}
+
+[data-theme="pixel"] .desktop-wallpaper {
+    background-image: url(/wallhaven-rdrlkm.webp);
+}
+
+/* ----- Classic (Win95) ----- */
+[data-theme="classic"] .app {
+    --font-family: "MS Sans Serif", "Segoe UI", system-ui, sans-serif;
+    --font-size: 13px;
+    --font-size-sm: 12px;
+    --font-size-xs: 11px;
+    --heading-font: "MS Sans Serif", "Segoe UI", system-ui, sans-serif;
+
+    background: #008080;
+
+    --taskbar-bg: #c0c0c0;
+    --taskbar-text: #000000;
+    --taskbar-hover: #e0e0e0;
+    --taskbar-active: #ffffff;
+    --taskbar-start-bg: #c0c0c0;
+    --taskbar-start-hover: #e0e0e0;
+    --taskbar-item-bg: transparent;
+    --taskbar-border: #ffffff;
+
+    --window-bg: #c0c0c0;
+    --window-border: 2px outset #ffffff;
+    --window-shadow: none;
+    --window-radius: 0;
+    --window-title-bg: linear-gradient(90deg, #000080, #1084d0);
+    --window-title-bg-active: linear-gradient(90deg, #0000c0, #3094e0);
+    --window-title-text: #ffffff;
+    --window-title-font: "MS Sans Serif", system-ui, sans-serif;
+    --window-title-size: 12px;
+
+    --win-btn-close: #c0c0c0;
+    --win-btn-min: #c0c0c0;
+    --win-btn-max: #c0c0c0;
+
+    --icon-color: #008080;
+    --icon-hover: rgba(0, 128, 128, 0.2);
+    --icon-label-color: #ffffff;
+    --icon-label-shadow: 1px 1px 0 #000000;
+
+    --content-text: #000000;
+    --content-heading: #000080;
+    --content-subtitle: #666666;
+    --content-link: #0000ff;
+    --content-link-hover: #0000ff;
+
+    --card-bg: #ffffff;
+    --card-border: 1px solid #808080;
+    --card-hover-border: 1px solid #000080;
+    --code-bg: #d4d4d4;
+
+    --tag-bg: #808080;
+    --tag-text: #ffffff;
+
+    --accent: #000080;
+
+    --scrollbar-bg: #c0c0c0;
+    --scrollbar-thumb: #808080;
+    --scrollbar-hover: #666666;
+
+    --resize-handle-color: #808080;
+    --selection-bg: #000080;
+
+    --start-menu-bg: #c0c0c0;
+    --start-menu-border: 2px outset #ffffff;
+    --start-menu-title: #000000;
+    --start-menu-item-hover: #000080;
+    --start-menu-item-selected: #000080;
+}
+
+/* Classic desktop background image */
+[data-theme="classic"] .desktop {
+    background-color: #71a098;
+}
+
+[data-theme="classic"] .desktop-wallpaper {
+    background-image: url(/wp2660135-windows-95-wallpaper-hd.webp);
+}
+
+/* ----- Modern (clean) ----- */
+[data-theme="modern"] .app {
+    --font-family: "Segoe UI", "SF Pro Display", -apple-system, sans-serif;
+    --font-size: 14px;
+    --font-size-sm: 13px;
+    --font-size-xs: 12px;
+    --heading-font: "Segoe UI", "SF Pro Display", -apple-system, sans-serif;
+
+    background: #141428;
+
+    --taskbar-bg: rgba(20, 20, 40, 0.92);
+    --taskbar-text: #ddd;
+    --taskbar-hover: rgba(255, 255, 255, 0.12);
+    --taskbar-active: rgba(255, 255, 255, 0.14);
+    --taskbar-start-bg: rgba(255, 255, 255, 0.08);
+    --taskbar-start-hover: rgba(255, 255, 255, 0.14);
+    --taskbar-item-bg: rgba(255, 255, 255, 0.06);
+    --taskbar-border: rgba(255, 255, 255, 0.06);
+
+    --window-bg: #f0f0f0;
+    --window-border: none;
+    --window-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    --window-radius: 0.5rem;
+    --window-radius-top: 0.6rem;
+    --window-title-bg: linear-gradient(180deg, #4a6fa5, #2c4a7c);
+    --window-title-bg-active: linear-gradient(180deg, #5a7fb5, #3a5a8c);
+    --window-title-text: #fff;
+    --window-title-font: "Segoe UI", system-ui, sans-serif;
+    --window-title-size: 12px;
+
+    --win-btn-close: #ff5f57;
+    --win-btn-min: #fdbc40;
+    --win-btn-max: #33c748;
+
+    --icon-color: #ffd54f;
+    --icon-hover: rgba(255, 255, 255, 0.1);
+    --icon-label-color: #fff;
+    --icon-label-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+
+    --content-text: #444;
+    --content-heading: #1a1a2e;
+    --content-subtitle: #888;
+    --content-link: #4a6fa5;
+    --content-link-hover: #4a6fa5;
+
+    --card-bg: #f8f9fa;
+    --card-border: 1px solid #e8e8e8;
+    --card-hover-border: 1px solid #4a6fa5;
+    --code-bg: rgba(0, 0, 0, 0.05);
+
+    --tag-bg: #4a6fa5;
+    --tag-text: #fff;
+
+    --accent: #4a6fa5;
+
+    --scrollbar-bg: #e8e8e8;
+    --scrollbar-thumb: #bbb;
+    --scrollbar-hover: #999;
+
+    --resize-handle-color: #888;
+    --selection-bg: #4a6fa5;
+
+    --start-menu-bg: rgba(30, 30, 50, 0.95);
+    --start-menu-border: 1px solid rgba(255, 255, 255, 0.1);
+    --start-menu-title: #fff;
+    --start-menu-item-hover: rgba(255, 255, 255, 0.08);
+    --start-menu-item-selected: rgba(74, 111, 165, 0.4);
+}
+
+/* Modern desktop background image */
+[data-theme="modern"] .desktop {
+    background-color: #425b79;
+}
+
+[data-theme="modern"] .desktop-wallpaper {
+    background-image: url(/wallhaven-vmy7j8.webp);
+}
+
+/* ----- Terminal ----- */
+[data-theme="terminal"] .app {
+    --font-family: "Share Tech Mono", "Courier New", monospace;
+    --font-size: 14px;
+    --font-size-sm: 13px;
+    --font-size-xs: 12px;
+    --heading-font: "Share Tech Mono", "Courier New", monospace;
+
+    background: #0a0a0a;
+
+    --taskbar-bg: #0a0a0a;
+    --taskbar-text: #00ff00;
+    --taskbar-hover: rgba(0, 255, 0, 0.1);
+    --taskbar-active: rgba(0, 255, 0, 0.2);
+    --taskbar-start-bg: #0a0a0a;
+    --taskbar-start-hover: rgba(0, 255, 0, 0.15);
+    --taskbar-item-bg: rgba(0, 255, 0, 0.04);
+    --taskbar-border: rgba(0, 255, 0, 0.15);
+
+    --window-bg: #0d0d0d;
+    --window-border: 1px solid #00ff00;
+    --window-shadow: 0 0 16px rgba(0, 255, 0, 0.15);
+    --window-radius: 0;
+    --window-title-bg: #0a0a0a;
+    --window-title-bg-active: #141414;
+    --window-title-text: #00ff00;
+    --window-title-font: "Share Tech Mono", monospace;
+    --window-title-size: 12px;
+
+    --win-btn-close: #00ff00;
+    --win-btn-min: #00ff00;
+    --win-btn-max: #00ff00;
+
+    --icon-color: #00ff00;
+    --icon-hover: rgba(0, 255, 0, 0.1);
+    --icon-label-color: #00ff00;
+    --icon-label-shadow: 0 0 4px rgba(0, 255, 0, 0.5);
+
+    --content-text: #00ff00;
+    --content-heading: #00ff00;
+    --content-subtitle: #008800;
+    --content-link: #00ff00;
+    --content-link-hover: #00ff00;
+
+    --card-bg: #0a0a0a;
+    --card-border: 1px solid #00ff00;
+    --card-hover-border: 1px solid #00ff00;
+    --code-bg: #141414;
+
+    --tag-bg: #003300;
+    --tag-text: #00ff00;
+
+    --accent: #00ff00;
+
+    --scrollbar-bg: #0a0a0a;
+    --scrollbar-thumb: #003300;
+    --scrollbar-hover: #005500;
+
+    --resize-handle-color: #00ff00;
+    --selection-bg: #003300;
+
+    --start-menu-bg: #0a0a0a;
+    --start-menu-border: 1px solid #00ff00;
+    --start-menu-title: #00ff00;
+    --start-menu-item-hover: rgba(0, 255, 0, 0.1);
+    --start-menu-item-selected: rgba(0, 255, 0, 0.2);
+}
+
+/* Terminal desktop background image */
+[data-theme="terminal"] .desktop {
+    background-color: #0a0a0a;
+}
+
+[data-theme="terminal"] .desktop-wallpaper {
+    background-image: none;
+}

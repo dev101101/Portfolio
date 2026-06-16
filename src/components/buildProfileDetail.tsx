@@ -16,9 +16,13 @@ export function buildProfileDetail(profile: Profile): ReactNode {
         background: "var(--window-bg)",
         border: "var(--window-border)",
         boxShadow: "var(--window-shadow)",
-        flexWrap: "wrap",
       }}
     >
+      <img
+        className="about-avatar"
+        src={profile.avatar}
+        alt={profile.name}
+      />
       <div style={{ minWidth: 0 }}>
         <div
           style={{
@@ -36,6 +40,18 @@ export function buildProfileDetail(profile: Profile): ReactNode {
           >
             {profile.name}
           </h1>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginTop: 2,
+          }}
+        >
+          <p className="about-subtitle" style={{ margin: 0 }}>
+            {profile.tagline}
+          </p>
           <a
             href="/resume.pdf"
             download
@@ -45,9 +61,6 @@ export function buildProfileDetail(profile: Profile): ReactNode {
             ⬇ RESUME
           </a>
         </div>
-        <p className="about-subtitle" style={{ marginTop: 2 }}>
-          {profile.tagline}
-        </p>
       </div>
     </div>,
   );

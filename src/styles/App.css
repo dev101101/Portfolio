@@ -1725,13 +1725,8 @@ body,
 
 @media (max-width: 480px) {
     .about-card {
-        flex-direction: column;
-        text-align: center;
         gap: 12px;
         padding: 14px;
-    }
-    .about-card .about-subtitle {
-        text-align: center;
     }
 }
 

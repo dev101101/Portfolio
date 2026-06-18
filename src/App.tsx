@@ -121,7 +121,7 @@ function App() {
       setAboutDetail(buildProfileDetail(getProfile(lang), t, lang));
       setDbReady(true);
     });
-  }, [lang]);
+  }, [lang, t]);
 
   const basePos = useMemo(
     () => {

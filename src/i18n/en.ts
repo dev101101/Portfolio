@@ -184,4 +184,4 @@ const en = {
 };
 
 export default en;
-export interface Translations extends Record<string, string | string[]> {}
+export type Translations = Record<string, string | string[]>;

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useT } from "../context/LanguageContext";
+import { useT } from "../context/language";
 
 interface FileNavbarProps {
   onSave: () => void;

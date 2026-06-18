@@ -4,7 +4,7 @@ import type { Theme } from "../types/themes";
 import Clock from "./Clock";
 import StartMenu from "./StartMenu";
 import LangSwitcher from "./LangSwitcher";
-import { useT } from "../context/LanguageContext";
+import { useT } from "../context/language";
 
 interface TaskbarProps {
   windows: WindowState[];

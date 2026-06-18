@@ -10,7 +10,7 @@ import {
   ModernFile,
   TerminalFile,
 } from "./FolderSvgs";
-import { useT } from "../context/LanguageContext";
+import { useT } from "../context/language";
 
 export interface FolderItem {
   id?: string;

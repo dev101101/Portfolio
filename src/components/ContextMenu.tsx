@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useT } from "../context/LanguageContext";
+import { useT } from "../context/language";
 
 interface ContextMenuAction {
   label: string;

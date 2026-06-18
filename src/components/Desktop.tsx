@@ -3,7 +3,7 @@ import type { Folder } from "../types/desktop";
 import FolderIcon from "./FolderIcon";
 import ContextMenu from "./ContextMenu";
 import { PROTECTED_IDS } from "../data/constants";
-import { useT } from "../context/LanguageContext";
+import { useT } from "../context/language";
 
 const GRID_SIZE_X = 100;
 const GRID_SIZE_Y = 110;

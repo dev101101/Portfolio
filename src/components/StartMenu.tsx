@@ -1,5 +1,5 @@
 import type { Theme } from "../types/themes";
-import { useT } from "../context/LanguageContext";
+import { useT } from "../context/language";
 
 interface StartMenuProps {
   themes: Theme[];

@@ -1,6 +1,6 @@
 import { useRef, useCallback, useState, useEffect, type ReactNode } from "react";
 import type { WindowState } from "../types/desktop";
-import { useT } from "../context/LanguageContext";
+import { useT } from "../context/language";
 
 interface WindowProps {
   win: WindowState;

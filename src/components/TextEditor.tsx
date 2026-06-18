@@ -3,7 +3,7 @@ import { initDb, persistDb } from "../data/db";
 import { findItemsBySectionId, upsertItem } from "../data/models/section";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useT } from "../context/LanguageContext";
+import { useT } from "../context/language";
 
 interface TextEditorProps {
   sectionId: string;

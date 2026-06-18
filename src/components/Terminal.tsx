@@ -13,7 +13,7 @@ import {
   type ItemRow,
 } from "../data/models/section";
 import { PROTECTED_IDS } from "../data/constants";
-import { useT } from "../context/LanguageContext";
+import { useT } from "../context/language";
 
 const COMMANDS = [
   "help", "ls", "cd", "pwd", "cat", "tree", "profile", "sections", "items", "sql",

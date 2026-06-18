@@ -15,7 +15,7 @@ import { saveItem, removeItem } from "../data/controllers/section";
 import { findItemsBySectionId } from "../data/models/section";
 import { fetchBlogList, fetchBlogArticle, mapDevtoToPageItem } from "../data/blog-api";
 import { PROTECTED_IDS } from "../data/constants";
-import { useT } from "../context/LanguageContext";
+import { useT } from "../context/language";
 import Folder from "./Folder";
 import File from "./File";
 import ContentPage from "./ContentPage";

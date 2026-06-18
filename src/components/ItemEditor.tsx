@@ -4,7 +4,7 @@ import { findItemsBySectionId, upsertItem } from "../data/models/section";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import FileNavbar from "./FileNavbar";
-import { useT } from "../context/LanguageContext";
+import { useT } from "../context/language";
 
 interface ItemEditorProps {
   sectionId: string;

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useT } from "../context/LanguageContext";
+import { useT } from "../context/language";
 
 interface FileProps {
   detail: ReactNode;

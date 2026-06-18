@@ -15,7 +15,7 @@ import { buildProfileDetail } from "./components/buildProfileDetail";
 import { getProfile, getSections, initDbAsync, persistDb, initDb } from "./data/db";
 import { saveSection, saveItem } from "./data/controllers/section";
 import { findItemsBySectionId, deleteSection, upsertItem, deleteItem } from "./data/models/section";
-import { useT } from "./context/LanguageContext";
+import { useT } from "./context/language";
 import "./styles/variables.css";
 import "./styles/reset.css";
 import "./styles/app-shell.css";

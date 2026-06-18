@@ -1,4 +1,4 @@
-import { useT } from "../context/LanguageContext";
+import { useT } from "../context/language";
 
 function LangSwitcher() {
   const { lang, setLang } = useT();

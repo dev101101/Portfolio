@@ -5,6 +5,7 @@ export interface SectionRow {
   label: string;
   type: "file" | "folder" | "terminal";
   sort_order: number;
+  label_es?: string;
 }
 
 export interface ItemRow {
@@ -19,6 +20,9 @@ export interface ItemRow {
   url: string | null;
   meta_json: string | null;
   sort_order: number;
+  title_es?: string;
+  description_es?: string;
+  body_es?: string;
 }
 
 export function findAllSections(db: Database): SectionRow[] {

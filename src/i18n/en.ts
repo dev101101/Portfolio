@@ -181,7 +181,7 @@ const en = {
 
   // Context menu
   "contextMenu.ariaLabel": "Context menu",
-} as const;
+};
 
 export default en;
-export type Translations = typeof en;
+export interface Translations extends Record<string, string | string[]> {}

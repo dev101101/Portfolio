@@ -20,8 +20,8 @@ export function getProfile(db: Database): ProfileData | undefined {
     tagline: row.tagline,
     bio: row.bio,
     skills: JSON.parse(row.skills),
-    tagline_es: (row as Record<string, unknown>).tagline_es as string | null ?? undefined,
-    bio_es: (row as Record<string, unknown>).bio_es as string | null ?? undefined,
+    tagline_es: row.tagline_es ?? undefined,
+    bio_es: row.bio_es ?? undefined,
   };
 }
 

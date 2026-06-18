@@ -177,8 +177,8 @@ export function getProfile(lang?: string): Profile {
   return {
     avatar: p.avatar,
     name: p.name,
-    tagline: pickLang(p.tagline, (p as Record<string, unknown>).tagline_es as string | null, l),
-    bio: pickLang(p.bio, (p as Record<string, unknown>).bio_es as string | null, l),
+    tagline: pickLang(p.tagline, p.tagline_es ?? null, l),
+    bio: pickLang(p.bio, p.bio_es ?? null, l),
     skills: p.skills,
   };
 }
@@ -188,15 +188,15 @@ export function getSections(lang?: string): Section[] {
   const l = lang ?? getLang();
   return getSectionsCtrl(db).map((s) => ({
     id: s.id,
-    label: pickLang(s.label, (s as Record<string, unknown>).label_es as string | null, l),
+    label: pickLang(s.label, s.label_es ?? null, l),
     type: s.type,
     items: s.items.map((i) => ({
       id: i.id,
-      title: pickLang(i.title, (i as Record<string, unknown>).title_es as string | null, l),
-      description: pickLang(i.description ?? "", (i as Record<string, unknown>).description_es as string | null, l) || undefined,
+      title: pickLang(i.title, i.title_es ?? null, l),
+      description: pickLang(i.description ?? "", i.description_es ?? null, l) || undefined,
       date: i.date,
       tags: i.tags,
-      body: pickLang(i.body ?? "", (i as Record<string, unknown>).body_es as string | null, l) || undefined,
+      body: pickLang(i.body ?? "", i.body_es ?? null, l) || undefined,
       url: i.url,
       meta: i.meta,
       parentItemId: i.parentItemId,
@@ -209,11 +209,11 @@ export function getRootItems(sectionId: string, lang?: string): PageItem[] {
   const l = lang ?? getLang();
   return getRootItemsCtrl(db, sectionId).map((i) => ({
     id: i.id,
-    title: pickLang(i.title, (i as Record<string, unknown>).title_es as string | null, l),
-    description: pickLang(i.description ?? "", (i as Record<string, unknown>).description_es as string | null, l) || undefined,
+    title: pickLang(i.title, i.title_es ?? null, l),
+    description: pickLang(i.description ?? "", i.description_es ?? null, l) || undefined,
     date: i.date,
     tags: i.tags,
-    body: pickLang(i.body ?? "", (i as Record<string, unknown>).body_es as string | null, l) || undefined,
+    body: pickLang(i.body ?? "", i.body_es ?? null, l) || undefined,
     url: i.url,
     meta: i.meta,
     parentItemId: i.parentItemId,
@@ -226,11 +226,11 @@ export function getChildItems(parentId: string, lang?: string): PageItem[] {
   const results = getChildItemsCtrl(db, parentId);
   return results.map((i) => ({
     id: i.id,
-    title: pickLang(i.title, (i as Record<string, unknown>).title_es as string | null, l),
-    description: pickLang(i.description ?? "", (i as Record<string, unknown>).description_es as string | null, l) || undefined,
+    title: pickLang(i.title, i.title_es ?? null, l),
+    description: pickLang(i.description ?? "", i.description_es ?? null, l) || undefined,
     date: i.date,
     tags: i.tags,
-    body: pickLang(i.body ?? "", (i as Record<string, unknown>).body_es as string | null, l) || undefined,
+    body: pickLang(i.body ?? "", i.body_es ?? null, l) || undefined,
     url: i.url,
     meta: i.meta,
     parentItemId: i.parentItemId,

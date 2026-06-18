@@ -1,5 +1,5 @@
 import type { Database } from "sql.js";
-import { findAllSections, findItemsBySectionId, findRootItemsBySectionId, findItemsByParentId, upsertSection, upsertItem, deleteItem, deleteSection as deleteSectionModel } from "../models/section";
+import { findAllSections, findItemsBySectionId, findRootItemsBySectionId, findItemsByParentId, type ItemRow, upsertSection, upsertItem, deleteItem, deleteSection as deleteSectionModel } from "../models/section";
 
 export interface ItemData {
   id: string;
@@ -24,20 +24,20 @@ export interface SectionData {
   label_es?: string;
 }
 
-function mapItem(i: Record<string, unknown>): ItemData {
+function mapItem(i: ItemRow): ItemData {
   return {
-    id: i.id as string,
-    title: i.title as string,
-    description: (i.description as string | null) ?? undefined,
-    date: (i.date as string | null) ?? undefined,
-    tags: i.tags ? JSON.parse(i.tags as string) : undefined,
-    body: (i.body as string | null) ?? undefined,
-    url: (i.url as string | null) ?? undefined,
-    meta: i.meta_json ? JSON.parse(i.meta_json as string) : undefined,
-    parentItemId: (i.parent_item_id as string | null) ?? undefined,
-    title_es: (i.title_es as string | null) ?? undefined,
-    description_es: (i.description_es as string | null) ?? undefined,
-    body_es: (i.body_es as string | null) ?? undefined,
+    id: i.id,
+    title: i.title,
+    description: i.description ?? undefined,
+    date: i.date ?? undefined,
+    tags: i.tags ? JSON.parse(i.tags) : undefined,
+    body: i.body ?? undefined,
+    url: i.url ?? undefined,
+    meta: i.meta_json ? JSON.parse(i.meta_json) : undefined,
+    parentItemId: i.parent_item_id ?? undefined,
+    title_es: i.title_es,
+    description_es: i.description_es,
+    body_es: i.body_es,
   };
 }
 
@@ -48,7 +48,7 @@ export function getSections(db: Database): SectionData[] {
     label: s.label,
     type: s.type,
     items: findItemsBySectionId(db, s.id).map(mapItem),
-    label_es: (s as Record<string, unknown>).label_es as string | null ?? undefined,
+    label_es: s.label_es,
   }));
 }
 

@@ -7,6 +7,8 @@ export interface ProfileRow {
   tagline: string;
   bio: string;
   skills: string;
+  tagline_es?: string;
+  bio_es?: string;
 }
 
 export function findProfile(db: Database): ProfileRow | undefined {

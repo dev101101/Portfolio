@@ -434,7 +434,7 @@ function runCommand(input: string, cwd: string, maxFolders: number, t: (key: str
     }
 
     default:
-      return { output: t("terminal.error.unknownCmd", { cmd }) };
+      return { output: t("terminal.error.unknownCmd", { cmd: cmd ?? "" }) };
   }
 }
 

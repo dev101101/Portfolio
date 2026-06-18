@@ -49,15 +49,15 @@ function loadItem(sectionId: string, itemId?: string): string {
   const item = itemId ? items.find((i) => i.id === itemId) ?? items[0]! : items[0]!;
   if (!item) return "";
   const lang = getLang();
-  const body = pickLang(item.body ?? "", (item as Record<string, unknown>).body_es as string | null, lang);
+  const body = pickLang(item.body ?? "", item.body_es ?? null, lang);
   const lines: string[] = [];
-  const title = pickLang(item.title, (item as Record<string, unknown>).title_es as string | null, lang);
+  const title = pickLang(item.title, item.title_es ?? null, lang);
   if (title && !hasDirectiveInBody(body, "title")) {
     for (const t of title.split(", ")) {
       if (t.trim()) lines.push(`[title: ${t.trim()}]`);
     }
   }
-  const description = pickLang(item.description ?? "", (item as Record<string, unknown>).description_es as string | null, lang);
+  const description = pickLang(item.description ?? "", item.description_es ?? null, lang);
   if (description && !hasDirectiveInBody(body, "description")) {
     for (const d of description.split("\n")) {
       if (d.trim()) lines.push(`[description: ${d.trim()}]`);

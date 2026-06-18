@@ -79,11 +79,35 @@ const SQL = await initSqlJs({
           )
         `);
       }
-      // migrate existing databases — add parent_item_id if not present
-      const cols = d.exec("PRAGMA table_info(items)");
-      const colNames = cols[0]?.values.map((v) => v[1]) ?? [];
-      if (!colNames.includes("parent_item_id")) {
+      // migrate existing databases — add columns if not present
+      const pCols = d.exec("PRAGMA table_info(profile)");
+      const pColNames = pCols[0]?.values.map((v) => v[1]) ?? [];
+      if (!pColNames.includes("tagline_es")) {
+        d.run("ALTER TABLE profile ADD COLUMN tagline_es TEXT");
+      }
+      if (!pColNames.includes("bio_es")) {
+        d.run("ALTER TABLE profile ADD COLUMN bio_es TEXT");
+      }
+
+      const sCols = d.exec("PRAGMA table_info(sections)");
+      const sColNames = sCols[0]?.values.map((v) => v[1]) ?? [];
+      if (!sColNames.includes("label_es")) {
+        d.run("ALTER TABLE sections ADD COLUMN label_es TEXT");
+      }
+
+      const iCols = d.exec("PRAGMA table_info(items)");
+      const iColNames = iCols[0]?.values.map((v) => v[1]) ?? [];
+      if (!iColNames.includes("parent_item_id")) {
         d.run("ALTER TABLE items ADD COLUMN parent_item_id TEXT REFERENCES items(id) ON DELETE CASCADE");
+      }
+      if (!iColNames.includes("title_es")) {
+        d.run("ALTER TABLE items ADD COLUMN title_es TEXT");
+      }
+      if (!iColNames.includes("description_es")) {
+        d.run("ALTER TABLE items ADD COLUMN description_es TEXT");
+      }
+      if (!iColNames.includes("body_es")) {
+        d.run("ALTER TABLE items ADD COLUMN body_es TEXT");
       }
       seed(d);
       saveDbToStorage(d);
@@ -132,25 +156,47 @@ export interface Profile {
   skills: string[];
 }
 
-export function getProfile(): Profile {
-  if (!db) return { avatar: "", name: "", tagline: "", bio: "", skills: [] };
-  const p = getProfileCtrl(db);
-  return p ?? { avatar: "", name: "", tagline: "", bio: "", skills: [] };
+function pickLang(valEn: string, valEs: string | null | undefined, lang: string): string {
+  if (lang === "es" && valEs != null) return valEs;
+  return valEn;
 }
 
-export function getSections(): Section[] {
+function getLang(): string {
+  try {
+    return localStorage.getItem("portfolio-lang") || "en";
+  } catch {
+    return "en";
+  }
+}
+
+export function getProfile(lang?: string): Profile {
+  if (!db) return { avatar: "", name: "", tagline: "", bio: "", skills: [] };
+  const p = getProfileCtrl(db);
+  const l = lang ?? getLang();
+  if (!p) return { avatar: "", name: "", tagline: "", bio: "", skills: [] };
+  return {
+    avatar: p.avatar,
+    name: p.name,
+    tagline: pickLang(p.tagline, (p as Record<string, unknown>).tagline_es as string | null, l),
+    bio: pickLang(p.bio, (p as Record<string, unknown>).bio_es as string | null, l),
+    skills: p.skills,
+  };
+}
+
+export function getSections(lang?: string): Section[] {
   if (!db) return [];
+  const l = lang ?? getLang();
   return getSectionsCtrl(db).map((s) => ({
     id: s.id,
-    label: s.label,
+    label: pickLang(s.label, (s as Record<string, unknown>).label_es as string | null, l),
     type: s.type,
     items: s.items.map((i) => ({
       id: i.id,
-      title: i.title,
-      description: i.description,
+      title: pickLang(i.title, (i as Record<string, unknown>).title_es as string | null, l),
+      description: pickLang(i.description ?? "", (i as Record<string, unknown>).description_es as string | null, l) || undefined,
       date: i.date,
       tags: i.tags,
-      body: i.body,
+      body: pickLang(i.body ?? "", (i as Record<string, unknown>).body_es as string | null, l) || undefined,
       url: i.url,
       meta: i.meta,
       parentItemId: i.parentItemId,
@@ -158,31 +204,33 @@ export function getSections(): Section[] {
   }));
 }
 
-export function getRootItems(sectionId: string): PageItem[] {
+export function getRootItems(sectionId: string, lang?: string): PageItem[] {
   if (!db) return [];
+  const l = lang ?? getLang();
   return getRootItemsCtrl(db, sectionId).map((i) => ({
     id: i.id,
-    title: i.title,
-    description: i.description,
+    title: pickLang(i.title, (i as Record<string, unknown>).title_es as string | null, l),
+    description: pickLang(i.description ?? "", (i as Record<string, unknown>).description_es as string | null, l) || undefined,
     date: i.date,
     tags: i.tags,
-    body: i.body,
+    body: pickLang(i.body ?? "", (i as Record<string, unknown>).body_es as string | null, l) || undefined,
     url: i.url,
     meta: i.meta,
     parentItemId: i.parentItemId,
   }));
 }
 
-export function getChildItems(parentId: string): PageItem[] {
+export function getChildItems(parentId: string, lang?: string): PageItem[] {
   if (!db) return [];
+  const l = lang ?? getLang();
   const results = getChildItemsCtrl(db, parentId);
   return results.map((i) => ({
     id: i.id,
-    title: i.title,
-    description: i.description,
+    title: pickLang(i.title, (i as Record<string, unknown>).title_es as string | null, l),
+    description: pickLang(i.description ?? "", (i as Record<string, unknown>).description_es as string | null, l) || undefined,
     date: i.date,
     tags: i.tags,
-    body: i.body,
+    body: pickLang(i.body ?? "", (i as Record<string, unknown>).body_es as string | null, l) || undefined,
     url: i.url,
     meta: i.meta,
     parentItemId: i.parentItemId,

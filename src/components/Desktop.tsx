@@ -3,6 +3,7 @@ import type { Folder } from "../types/desktop";
 import FolderIcon from "./FolderIcon";
 import ContextMenu from "./ContextMenu";
 import { PROTECTED_IDS } from "../data/constants";
+import { useT } from "../context/LanguageContext";
 
 const GRID_SIZE_X = 100;
 const GRID_SIZE_Y = 110;
@@ -44,6 +45,7 @@ type ContextMenuState =
   | null;
 
 function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSection, onNewFolder, onNewFile, onRefresh, onDropFileIntoFolder, onDropItemFromFolder }: DesktopProps) {
+  const { t } = useT();
   const [wallpaperLoaded, setWallpaperLoaded] = useState(() => !WALLPAPERS[theme]);
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>(() => {
     try {
@@ -233,7 +235,7 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
       setPositions((prev) => ({ ...prev, [id]: pos }));
     }
 
-    onNewFolder(id, "New Folder");
+    onNewFolder(id, t("desktop.newFolder"));
     closeContextMenu();
   }, [onNewFolder, closeContextMenu, contextMenu, positions, gridMetrics]);
 
@@ -270,7 +272,7 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
       setPositions((prev) => ({ ...prev, [id]: pos }));
     }
 
-    onNewFile(id, "New File");
+    onNewFile(id, t("desktop.newFile"));
     closeContextMenu();
   }, [onNewFile, closeContextMenu, contextMenu, positions, gridMetrics]);
 
@@ -315,7 +317,7 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
   );
 
   return (
-    <div className="desktop" role="region" aria-label="Desktop" onContextMenu={handleDesktopContextMenu} onDragOver={(e) => e.preventDefault()} onDrop={handleDropFromFolder}>
+    <div className="desktop" role="region" aria-label={t("desktop.ariaLabel")} onContextMenu={handleDesktopContextMenu} onDragOver={(e) => e.preventDefault()} onDrop={handleDropFromFolder}>
       <div key={`wp-${theme}`} className={`desktop-wallpaper ${wallpaperLoaded ? "loaded" : ""}`} aria-hidden="true" />
       {WALLPAPERS[theme] && (
         <img key={`preload-${theme}`} src={WALLPAPERS[theme]!} onLoad={() => setWallpaperLoaded(true)} className="wallpaper-preload" alt="" />
@@ -326,9 +328,9 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
           x={contextMenu.x}
           y={contextMenu.y}
           actions={[
-            { label: "Open", onClick: () => onOpenFolder(contextMenu.folderId) },
-            { label: "Rename", onClick: () => { setRenamingId(contextMenu.folderId); }, disabled: contextMenu.isProtected },
-            { label: "Delete", onClick: () => onDeleteSection(contextMenu.folderId), disabled: contextMenu.isProtected },
+            { label: t("desktop.open"), onClick: () => onOpenFolder(contextMenu.folderId) },
+            { label: t("desktop.rename"), onClick: () => { setRenamingId(contextMenu.folderId); }, disabled: contextMenu.isProtected },
+            { label: t("desktop.delete"), onClick: () => onDeleteSection(contextMenu.folderId), disabled: contextMenu.isProtected },
           ]}
           onClose={closeContextMenu}
         />
@@ -338,9 +340,9 @@ function Desktop({ folders, theme, onOpenFolder, onRenameSection, onDeleteSectio
           x={contextMenu.x}
           y={contextMenu.y}
           actions={[
-            { label: "New Folder", onClick: handleNewFolder },
-            { label: "New File", onClick: handleNewFile },
-            { label: "Refresh", onClick: () => onRefresh() },
+            { label: t("desktop.newFolder"), onClick: handleNewFolder },
+            { label: t("desktop.newFile"), onClick: handleNewFile },
+            { label: t("desktop.refresh"), onClick: () => onRefresh() },
           ]}
           onClose={closeContextMenu}
         />

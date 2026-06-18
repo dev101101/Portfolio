@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useT } from "../context/LanguageContext";
 
 interface FileProps {
   detail: ReactNode;
@@ -6,11 +7,12 @@ interface FileProps {
 }
 
 function File({ detail, onBack }: FileProps) {
+  const { t } = useT();
   return (
     <div className="window-content-inner">
       {onBack && (
-        <button className="filebrowser-back" onClick={onBack} aria-label="Go back">
-          ← Back
+        <button className="filebrowser-back" onClick={onBack} aria-label={t("explorer.back")}>
+          {t("explorer.back")}
         </button>
       )}
       {detail}

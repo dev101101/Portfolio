@@ -15,6 +15,7 @@ import { buildProfileDetail } from "./components/buildProfileDetail";
 import { getProfile, getSections, initDbAsync, persistDb, initDb } from "./data/db";
 import { saveSection, saveItem } from "./data/controllers/section";
 import { findItemsBySectionId, deleteSection, upsertItem, deleteItem } from "./data/models/section";
+import { useT } from "./context/LanguageContext";
 import "./styles/variables.css";
 import "./styles/reset.css";
 import "./styles/app-shell.css";
@@ -66,6 +67,7 @@ const CASCADE_STEP = 14;
 const CASCADE_LIMIT = 800;
 
 function App() {
+  const { t, lang } = useT();
   const [windows, setWindows] = useState<Record<string, WindowState>>(INITIAL_WINDOWS);
   const windowsRef = useRef(windows);
   useEffect(() => { windowsRef.current = windows; }, [windows]);
@@ -91,15 +93,15 @@ function App() {
   const folders = useMemo(() => {
     if (!dbReady) return FOLDERS;
     void refreshKey;
-    const sections = getSections();
+    const sections = getSections(lang);
     const dbFolders: Folder[] = sections.map((s) => ({
       id: s.id,
       label: s.label,
       type: s.type,
     }));
-    dbFolders.push({ id: "terminal", label: "Terminal", type: "terminal" });
+    dbFolders.push({ id: "terminal", label: lang === "es" ? "Terminal" : "Terminal", type: "terminal" });
     return dbFolders;
-  }, [dbReady, refreshKey]);
+  }, [dbReady, refreshKey, lang]);
 
   const folderMap = useMemo(() => {
     const map = new Map<string, Folder>();
@@ -116,10 +118,10 @@ function App() {
 
   useEffect(() => {
     initDbAsync().then(() => {
-      setAboutDetail(buildProfileDetail(getProfile()));
+      setAboutDetail(buildProfileDetail(getProfile(lang), t, lang));
       setDbReady(true);
     });
-  }, []);
+  }, [lang]);
 
   const basePos = useMemo(
     () => {
@@ -249,54 +251,53 @@ function App() {
   const onOpenHelp = useCallback(() => {
     const helpContent = (
       <div className="help-inner">
-        <h2 className="help-heading">About Text Editor</h2>
-        <p className="help-paragraph">The Text Editor opens when you double-click or open a file. It has two modes: <strong>Preview</strong> (markdown rendered) and <strong>Edit</strong> (raw textarea).</p>
+        <h2 className="help-heading">{t("app.help.editorDesc")}</h2>
 
-        <h3 className="help-subheading">📂 File Menu</h3>
+        <h3 className="help-subheading">{t("app.help.fileMenu")}</h3>
         <ul className="help-list">
-          <li><strong>Save</strong> (<code className="help-inline-code">Ctrl+S</code>) — saves content to database</li>
-          <li><strong>Preview / Edit</strong> — toggles between rendered preview and raw textarea</li>
-          <li><strong>Save Forever</strong> — saves and locks the file as read-only</li>
+          <li><strong>{t("fileNavbar.save")}</strong> (<code className="help-inline-code">Ctrl+S</code>) — {t("app.help.fileSave").split(" — ")[1] || t("app.help.fileSave")}</li>
+          <li><strong>{t("fileNavbar.preview")} / {t("fileNavbar.edit")}</strong> — {t("app.help.filePreviewToggle").split(" — ")[1] || t("app.help.filePreviewToggle")}</li>
+          <li><strong>{t("fileNavbar.saveForever")}</strong> — {t("app.help.fileSaveForever").split(" — ")[1] || t("app.help.fileSaveForever")}</li>
         </ul>
 
-        <h3 className="help-subheading">✂️ Selection Menu</h3>
+        <h3 className="help-subheading">{t("app.help.selectionMenu")}</h3>
         <ul className="help-list">
-          <li><strong>Select All</strong> (<code className="help-inline-code">Ctrl+A</code>) — selects all text in the editor</li>
+          <li><strong>{t("fileNavbar.selectAll")}</strong> (<code className="help-inline-code">Ctrl+A</code>) — {t("app.help.selectionSelectAll").split(" — ")[1] || t("app.help.selectionSelectAll")}</li>
         </ul>
 
-        <h3 className="help-subheading">📋 Directives</h3>
-        <p className="help-paragraph-sm">Write these at the top of your file to add metadata:</p>
+        <h3 className="help-subheading">{t("app.help.directives")}</h3>
+        <p className="help-paragraph-sm">{t("app.help.directivesDesc")}</p>
         <ul className="help-list">
-          <li><code className="help-inline-code">[title: My Title]</code> — section title (multiple allowed)</li>
-          <li><code className="help-inline-code">[description: Text...]</code> — short description (multiple allowed)</li>
-          <li><code className="help-inline-code">[tags: tag1, tag2]</code> — skill tags</li>
-          <li><code className="help-inline-code">[meta: key=value]</code> — custom key-value pairs</li>
+          <li><code className="help-inline-code">[title: ...]</code> — {t("app.help.directiveTitle").split(" — ")[1] || t("app.help.directiveTitle")}</li>
+          <li><code className="help-inline-code">[description: ...]</code> — {t("app.help.directiveDescription").split(" — ")[1] || t("app.help.directiveDescription")}</li>
+          <li><code className="help-inline-code">[tags: ...]</code> — {t("app.help.directiveTags").split(" — ")[1] || t("app.help.directiveTags")}</li>
+          <li><code className="help-inline-code">[meta: ...]</code> — {t("app.help.directiveMeta").split(" — ")[1] || t("app.help.directiveMeta")}</li>
         </ul>
 
-        <h3 className="help-subheading">📝 Markdown Reference</h3>
-        <p className="help-paragraph-sm">Everything below the directives is rendered as GitHub-Flavored Markdown:</p>
+        <h3 className="help-subheading">{t("app.help.markdownRef")}</h3>
+        <p className="help-paragraph-sm">{t("app.help.markdownDesc")}</p>
         <ul className="help-list">
-          <li><strong># Heading</strong> → <strong>## Heading</strong> → <strong>###### Heading</strong> — section headings (h1–h6)</li>
-          <li><strong>**bold**</strong>, <strong>*italic*</strong>, <strong>~~strikethrough~~</strong> — text emphasis</li>
-          <li><strong>- item</strong> or <strong>1. item</strong> — unordered / ordered lists</li>
-          <li><strong>[text](url)</strong> — links, <strong>![alt](src)</strong> — images</li>
-          <li><strong>```</strong> — fenced code blocks (syntax-highlighted, selectable for copy)</li>
-          <li><strong>`code`</strong> — inline code</li>
-          <li><strong>| col1 | col2 |</strong> — tables (GFM)</li>
-          <li><strong>&gt; quote</strong> — blockquotes, <strong>---</strong> — horizontal rules</li>
+          <li>{t("app.help.markdownHeadings")}</li>
+          <li>{t("app.help.markdownEmphasis")}</li>
+          <li>{t("app.help.markdownLists")}</li>
+          <li>{t("app.help.markdownLinks")}</li>
+          <li>{t("app.help.markdownCode")}</li>
+          <li>{t("app.help.markdownInlineCode")}</li>
+          <li>{t("app.help.markdownTables")}</li>
+          <li>{t("app.help.markdownBlockquotes")}</li>
         </ul>
 
-        <h3 className="help-subheading">⌨️ Shortcuts</h3>
+        <h3 className="help-subheading">{t("app.help.shortcuts")}</h3>
         <ul>
-          <li><code className="help-inline-code">Ctrl+S</code> — save file</li>
-          <li><code className="help-inline-code">Ctrl+A</code> — select all text</li>
+          <li><code className="help-inline-code">Ctrl+S</code> — {t("fileNavbar.save")}</li>
+          <li><code className="help-inline-code">Ctrl+A</code> — {t("fileNavbar.selectAll")}</li>
           <li><code className="help-inline-code">Enter</code> — confirm / save rename</li>
           <li><code className="help-inline-code">Escape</code> — cancel rename</li>
         </ul>
       </div>
     );
-    openFile("help", helpContent);
-  }, [openFile]);
+    openFile(t("app.aboutTextEditor"), helpContent);
+  }, [openFile, t]);
 
   const closeWindow = useCallback((id: string) => {
     setWindows((prev) => {

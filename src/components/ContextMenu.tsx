@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useT } from "../context/LanguageContext";
 
 interface ContextMenuAction {
   label: string;
@@ -14,6 +15,7 @@ interface ContextMenuProps {
 }
 
 function ContextMenu({ x, y, actions, onClose }: ContextMenuProps) {
+  const { t } = useT();
   const ref = useRef<HTMLDivElement>(null);
 
   const menuWidth = 160;
@@ -47,7 +49,7 @@ function ContextMenu({ x, y, actions, onClose }: ContextMenuProps) {
     <div
       ref={ref}
       role="menu"
-      aria-label="Context menu"
+      aria-label={t("contextMenu.ariaLabel")}
       className="context-menu"
       style={{ position: "fixed", left: clampedX, top: clampedY, zIndex: 9999 }}
       onClick={(e) => e.stopPropagation()}

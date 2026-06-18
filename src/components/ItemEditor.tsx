@@ -4,6 +4,7 @@ import { findItemsBySectionId, upsertItem } from "../data/models/section";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import FileNavbar from "./FileNavbar";
+import { useT } from "../context/LanguageContext";
 
 interface ItemEditorProps {
   sectionId: string;
@@ -11,6 +12,7 @@ interface ItemEditorProps {
 }
 
 function ItemEditor({ sectionId, itemName }: ItemEditorProps) {
+  const { t } = useT();
   const db = initDb();
   const item = db
     ? findItemsBySectionId(db, sectionId).find((i) => i.title === itemName)
@@ -56,7 +58,7 @@ function ItemEditor({ sectionId, itemName }: ItemEditorProps) {
   if (!db) {
     return (
       <div className="window-content-inner editor-loading-inner">
-        <p>Loading...</p>
+        <p>{t("editor.loading")}</p>
       </div>
     );
   }
@@ -90,7 +92,7 @@ function ItemEditor({ sectionId, itemName }: ItemEditorProps) {
             </ReactMarkdown>
           ) : (
             <p className="editor-rendered-empty">
-              Empty file. Switch to Edit mode to add content.
+              {t("editor.emptyEditHint")}
             </p>
           )
         ) : (
@@ -101,7 +103,7 @@ function ItemEditor({ sectionId, itemName }: ItemEditorProps) {
             onChange={(e) => {
               setText(e.target.value);
             }}
-            placeholder="Write your content here... (supports Markdown)"
+            placeholder={t("editor.placeholder")}
           />
         )}
       </div>

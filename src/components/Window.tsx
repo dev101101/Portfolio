@@ -1,5 +1,6 @@
 import { useRef, useCallback, useState, useEffect, type ReactNode } from "react";
 import type { WindowState } from "../types/desktop";
+import { useT } from "../context/LanguageContext";
 
 interface WindowProps {
   win: WindowState;
@@ -38,6 +39,7 @@ function Window({
     startW: 0,
     startH: 0,
   });
+  const { t } = useT();
   const [resizing, setResizing] = useState(false);
   const [maximized, setMaximized] = useState(false);
   const savedRef = useRef({ x: 0, y: 0, w: 642, h: 430 });
@@ -62,13 +64,13 @@ function Window({
     if (win.position.y < taskbarH + margin) {
       newY = taskbarH + margin;
     }
+    console.log("clampPosition →", { before: win.position, afterX: newX, afterY: newY, viewportW: window.innerWidth, viewportH: window.innerHeight });
     if (newX !== win.position.x || newY !== win.position.y) {
       onMove(newX, newY);
     }
   }, [win.position, win.size, onMove]);
 
   useEffect(() => {
-    clampPosition();
     const handleResize = () => clampPosition();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -104,10 +106,10 @@ function Window({
 
       const onDrag = (ev: MouseEvent) => {
         if (!el.dragging) return;
-        onMove(
-          el.startPosX + ev.clientX - el.startX,
-          el.startPosY + ev.clientY - el.startY,
-        );
+        const newX = el.startPosX + ev.clientX - el.startX;
+        const newY = el.startPosY + ev.clientY - el.startY;
+        console.log("drag →", { startPosX: el.startPosX, startPosY: el.startPosY, deltaX: ev.clientX - el.startX, deltaY: ev.clientY - el.startY, newX, newY });
+        onMove(newX, newY);
       };
       const onUp = () => {
         el.dragging = false;
@@ -237,20 +239,20 @@ function Window({
           <button
             className="win-btn minimize"
             onClick={onMinimize}
-            title="Minimize"
-            aria-label="Minimize window"
+            title={t("window.minimize")}
+            aria-label={t("window.minimize")}
           />
           <button
             className="win-btn maximize"
             onClick={toggleMaximize}
-            title={maximized ? "Restore" : "Maximize"}
-            aria-label={maximized ? "Restore window" : "Maximize window"}
+            title={maximized ? t("window.restore") : t("window.maximize")}
+            aria-label={maximized ? t("window.restore") : t("window.maximize")}
           />
           <button
             className="win-btn close"
             onClick={onClose}
-            title="Close"
-            aria-label="Close window"
+            title={t("window.close")}
+            aria-label={t("window.close")}
           />
         </div>
       </div>

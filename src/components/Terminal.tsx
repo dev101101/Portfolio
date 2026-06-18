@@ -13,6 +13,7 @@ import {
   type ItemRow,
 } from "../data/models/section";
 import { PROTECTED_IDS } from "../data/constants";
+import { useT } from "../context/LanguageContext";
 
 const COMMANDS = [
   "help", "ls", "cd", "pwd", "cat", "tree", "profile", "sections", "items", "sql",
@@ -92,7 +93,7 @@ function safeJsonParse(s: string): Record<string, unknown> | null {
   try { return JSON.parse(s); } catch { return null; }
 }
 
-function runCommand(input: string, cwd: string, maxFolders: number): { output: string; newCwd?: string; didMutate?: boolean } {
+function runCommand(input: string, cwd: string, maxFolders: number, t: (key: string, params?: Record<string, string | number>) => string): { output: string; newCwd?: string; didMutate?: boolean } {
   const db = initDb();
   if (!db) return { output: "Database is initializing. Please wait..." };
   const trimmed = input.trim();
@@ -115,32 +116,7 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
 
   switch (cmd) {
     case "help":
-      return { output: [
-        "Available commands:",
-        "  help                  show this message",
-        "  ls [path]             list directory contents",
-        "  cd <path>             change directory",
-        "  pwd                   print working directory",
-        "  cat <path>            show item content",
-        "  tree [path]           show hierarchical tree",
-        "  profile               show profile info",
-        "  sections              list all sections (table)",
-        "  items <section_id>    list items in section (table)",
-        "  sql <query>           run SQL query (SELECT free; mutations need --force)",
-        "  add-section <id> <label> [type]  create a new section",
-        "  add-item <section_id> <title>    add item to section (root level)",
-        "  rm-item <id>          delete item by ID",
-        "  rm-section <id>       delete section by ID",
-        "  mkdir <path>          create a folder at path",
-        "  touch <path>          create a file at path",
-        "  mv <src> <dst-dir>    move item to another folder",
-        "  rm <path>             delete item by path",
-        "  export                export database as JSON",
-        "  clear                 clear screen",
-        "  exit                  close terminal",
-        "",
-        "  Ctrl+L  clear    Ctrl+C  cancel    Ctrl+D  exit    Tab  autocomplete",
-      ].join("\n") };
+      return { output: t("terminal.help") };
 
     case "clear":
       return { output: "__CLEAR__" };
@@ -156,14 +132,14 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
       const segs = dirParts(target);
       if (segs.length === 0) {
         const secs = findAllSections(db);
-        return { output: secs.map((s) => (s.type === "folder" ? "📁 " : "📄 ") + s.label + "/").join("\n") || "(empty)" };
+        return { output: secs.map((s) => (s.type === "folder" ? "📁 " : "📄 ") + s.label + "/").join("\n") || t("terminal.empty") };
       }
       const r = resolveSectionPath(db, segs);
-      if ("error" in r) return { output: `ls: ${target}: ${r.error}` };
+      if ("error" in r) return { output: t("terminal.lsError", { path: target, error: r.error }) };
       const items = r.parentItemId === null
         ? findRootItemsBySectionId(db, r.sectionId)
         : findItemsByParentId(db, r.parentItemId);
-      if (items.length === 0) return { output: "(empty)" };
+      if (items.length === 0) return { output: t("terminal.empty") };
       return { output: items.map((i) => {
         const meta = i.meta_json ? safeJsonParse(i.meta_json) : null;
         const icon = meta?.['itemType'] === "folder" ? "📁 " : "📄 ";
@@ -180,25 +156,25 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
       }
       const segs = dirParts(target);
       const r = resolveSectionPath(db, segs);
-      if ("error" in r) return { output: `cd: ${target}: ${r.error}` };
+      if ("error" in r) return { output: t("terminal.cdError", { path: target, error: r.error }) };
       const newPath = "/" + r.sectionId + (r.parentItemId ? "/" + segs.slice(1).join("/") : "");
       return { output: "", newCwd: newPath };
     }
 
     case "cat": {
       const target = parts.slice(1).join(" ");
-      if (!target) return { output: "Usage: cat <path>" };
+      if (!target) return { output: t("terminal.usage.cat") };
       const segs = dirParts(target);
       if (segs.length === 1 && cwdSection) {
         const item = findItemByNameAndParent(db, cwdSection.sectionId, segs[0]!, cwdSection.parentItemId);
         if (item) return { output: formatItem(item) };
       }
       const r = resolveSectionPath(db, segs);
-      if ("error" in r) return { output: `cat: ${target}: ${r.error}` };
+      if ("error" in r) return { output: t("terminal.catError", { path: target, error: r.error }) };
       const item = r.itemName
         ? findItemByNameAndParent(db, r.sectionId, r.itemName, r.parentItemId)
         : null;
-      if (!item) return { output: `cat: ${target}: No such file` };
+      if (!item) return { output: t("terminal.error.noFile", { path: target }) };
       return { output: formatItem(item) };
     }
 
@@ -223,7 +199,7 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
         }
       } else {
         const r = resolveSectionPath(db, segs);
-        if ("error" in r) return { output: `tree: ${target}: ${r.error}` };
+        if ("error" in r) return { output: t("terminal.treeError", { path: target, error: r.error }) };
         const items = r.parentItemId === null
           ? findRootItemsBySectionId(db, r.sectionId)
           : findItemsByParentId(db, r.parentItemId);
@@ -239,21 +215,21 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
 
     case "profile": {
       const p = getProfile(db);
-      if (!p) return { output: "No profile found." };
+      if (!p) return { output: t("terminal.error.noProfile") };
       return { output: `Name: ${p.name}\nTagline: ${p.tagline}\nBio: ${p.bio.slice(0, 200)}${p.bio.length > 200 ? "..." : ""}\nSkills: ${p.skills.join(", ")}` };
     }
 
     case "sections": {
       const sectionList = findAllSections(db);
-      if (sectionList.length === 0) return { output: "No sections found." };
+      if (sectionList.length === 0) return { output: t("terminal.error.noSections") };
       return { output: formatTable(sectionList.map((s) => ({ id: s.id, label: s.label, type: s.type, order: s.sort_order }))) };
     }
 
     case "items": {
       const sectionId = parts[1];
-      if (!sectionId) return { output: "Usage: items <section_id>" };
+      if (!sectionId) return { output: t("terminal.usage.items") };
       const itemList = findItemsBySectionId(db, sectionId);
-      if (itemList.length === 0) return { output: `No items in section "${sectionId}".` };
+      if (itemList.length === 0) return { output: t("terminal.error.noItems", { id: sectionId }) };
       return { output: formatTable(
         itemList.map((i) => ({
           id: i.id,
@@ -265,20 +241,20 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
 
     case "sql": {
       const query = trimmed.slice(4).trim();
-      if (!query) return { output: "Usage: sql <query>" };
+      if (!query) return { output: t("terminal.usage.sql") };
       const isDDL = /^\s*(CREATE|DROP|ALTER|PRAGMA)\b/i.test(query);
       const isMutation = /^\s*(INSERT|UPDATE|DELETE)\b/i.test(query);
       const isDanger = parts.includes("--danger");
       const isForce = parts.includes("--force");
       if (isDDL && !isDanger) {
-        return { output: "⚠️  DDL blocked (CREATE/DROP/ALTER). Use `--danger` flag to allow." };
+        return { output: t("terminal.error.ddlBlocked") };
       }
       if (isMutation && !isForce) {
-        return { output: "⚠️  Mutation query detected. Use `--force` flag to execute.\n  Query: " + query.slice(0, 120) + (query.length > 120 ? "..." : "") };
+        return { output: t("terminal.error.mutationBlocked", { query: query.slice(0, 120) + (query.length > 120 ? "..." : "") }) };
       }
       try {
         const results = db.exec(query);
-        if (results.length === 0) return { output: "Query executed (no results).", didMutate: isMutation || isDDL };
+        if (results.length === 0) return { output: t("terminal.error.noResults"), didMutate: isMutation || isDDL };
         return { output: results
           .map((r) => {
             const rows = r.values.map((row) => {
@@ -292,7 +268,7 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
           })
           .join("\n\n") };
       } catch (e) {
-        return { output: `Error: ${(e as Error).message}` };
+        return { output: t("terminal.error.sql", { message: (e as Error).message }) };
       }
     }
 
@@ -300,37 +276,37 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
       const id = parts[1];
       const label = parts[2];
       const type = parts[3] as "file" | "folder" | "terminal" | undefined;
-      if (!id || !label) return { output: "Usage: add-section <id> <label> [file|folder|terminal]" };
+      if (!id || !label) return { output: t("terminal.usage.addSection") };
       const allSections = findAllSections(db);
       if (allSections.some((s) => s.id === id)) {
-        return { output: `Error: Section "${id}" already exists.` };
+        return { output: t("terminal.error.alreadyExists", { id }) };
       }
       if (type === "terminal" && allSections.some((s) => s.type === "terminal")) {
-        return { output: "Error: A terminal section already exists. Only one terminal is allowed." };
+        return { output: t("terminal.error.terminalExists") };
       }
       if (allSections.length + 1 >= maxFolders) {
-        return { output: `Error: Desktop is full (max ${maxFolders} folders). Delete some sections first.` };
+        return { output: t("terminal.error.desktopFull", { max: maxFolders }) };
       }
       saveSection(db, { id, label, type: type === "folder" ? "folder" : type === "terminal" ? "terminal" : "file" });
-      return { output: `Section "${id}" created.`, didMutate: true };
+      return { output: t("terminal.success.created", { id }), didMutate: true };
     }
 
     case "add-item": {
       const secId = parts[1];
       const title = parts.slice(2).join(" ");
-      if (!secId || !title) return { output: "Usage: add-item <section_id> <title>" };
-      if (PROTECTED_IDS.includes(secId)) return { output: `Error: Cannot modify protected section "${secId}".` };
+      if (!secId || !title) return { output: t("terminal.usage.addItem") };
+      if (PROTECTED_IDS.includes(secId)) return { output: t("terminal.error.protected", { id: secId }) };
       saveItem(db, {
         id: `manual-${Date.now()}`,
         section_id: secId,
         title,
       });
-      return { output: `Item "${title}" added to section "${secId}".`, didMutate: true };
+      return { output: t("terminal.success.itemAdded", { title, id: secId }), didMutate: true };
     }
 
     case "rm-item": {
       const id = parts[1];
-      if (!id) return { output: "Usage: rm-item <id>" };
+      if (!id) return { output: t("terminal.usage.rmItem") };
       const allSections = findAllSections(db);
       let protectedSection = false;
       for (const s of allSections) {
@@ -342,32 +318,32 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
           }
         }
       }
-      if (protectedSection) return { output: `Error: Cannot delete item from protected section.` };
+      if (protectedSection) return { output: t("terminal.error.protectedItem") };
       removeItem(db, id);
-      return { output: `Item "${id}" deleted.`, didMutate: true };
+      return { output: t("terminal.success.itemDeleted", { id }), didMutate: true };
     }
 
     case "rm-section": {
       const id = parts[1];
-      if (!id) return { output: "Usage: rm-section <id>" };
-      if (PROTECTED_IDS.includes(id)) return { output: `Error: Cannot delete protected section "${id}".` };
+      if (!id) return { output: t("terminal.usage.rmSection") };
+      if (PROTECTED_IDS.includes(id)) return { output: t("terminal.error.protectedItem") };
       deleteSection(db, id);
-      return { output: `Section "${id}" and its items deleted.`, didMutate: true };
+      return { output: t("terminal.success.sectionDeleted", { id }), didMutate: true };
     }
 
     // --- New nested folder commands ---
 
     case "mkdir": {
       const target = parts.slice(1).join(" ");
-      if (!target) return { output: "Usage: mkdir <section/path/to/folder>" };
+      if (!target) return { output: t("terminal.usage.mkdir") };
       const segs = dirParts(target);
-      if (segs.length < 2) return { output: "Usage: mkdir <section_id>/<folder_name> (e.g. mkdir projects/my-folder)" };
+      if (segs.length < 2) return { output: t("terminal.usage.mkdir") };
       const r = resolveSectionPath(db, segs.slice(0, -1));
-      if ("error" in r) return { output: `mkdir: ${r.error}` };
+      if ("error" in r) return { output: t("terminal.mkdirError", { error: r.error }) };
       const name = segs[segs.length - 1]!;
-      if (PROTECTED_IDS.includes(r.sectionId)) return { output: `Error: Cannot modify protected section "${r.sectionId}".` };
+      if (PROTECTED_IDS.includes(r.sectionId)) return { output: t("terminal.error.protected", { id: r.sectionId }) };
       const existing = findItemByNameAndParent(db, r.sectionId, name, r.parentItemId);
-      if (existing) return { output: `mkdir: "${name}" already exists.` };
+      if (existing) return { output: t("terminal.error.exists", { path: name }) };
       saveItem(db, {
         id: `folder-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         section_id: r.sectionId,
@@ -375,47 +351,47 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
         title: name,
         meta: { itemType: "folder" },
       });
-      return { output: `Folder "${name}" created.`, didMutate: true };
+      return { output: t("terminal.success.folderCreated", { name }), didMutate: true };
     }
 
     case "touch": {
       const target = parts.slice(1).join(" ");
-      if (!target) return { output: "Usage: touch <section/path/to/file>" };
+      if (!target) return { output: t("terminal.usage.touch") };
       const segs = dirParts(target);
-      if (segs.length < 2) return { output: "Usage: touch <section_id>/<file_name> (e.g. touch projects/notes)" };
+      if (segs.length < 2) return { output: t("terminal.usage.touch") };
       const r = resolveSectionPath(db, segs.slice(0, -1));
-      if ("error" in r) return { output: `touch: ${r.error}` };
+      if ("error" in r) return { output: t("terminal.touchError", { error: r.error }) };
       const name = segs[segs.length - 1]!;
-      if (PROTECTED_IDS.includes(r.sectionId)) return { output: `Error: Cannot modify protected section "${r.sectionId}".` };
+      if (PROTECTED_IDS.includes(r.sectionId)) return { output: t("terminal.error.protected", { id: r.sectionId }) };
       const existing = findItemByNameAndParent(db, r.sectionId, name, r.parentItemId);
-      if (existing) return { output: `touch: "${name}" already exists.` };
+      if (existing) return { output: t("terminal.error.exists", { path: name }) };
       saveItem(db, {
         id: `file-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         section_id: r.sectionId,
         parent_item_id: r.parentItemId ?? undefined,
         title: name,
       });
-      return { output: `File "${name}" created.`, didMutate: true };
+      return { output: t("terminal.success.fileCreated", { name }), didMutate: true };
     }
 
     case "mv": {
       const srcRaw = parts[1];
       const dstRaw = parts[2];
-      if (!srcRaw || !dstRaw) return { output: "Usage: mv <src_path> <dest_folder_path>" };
+      if (!srcRaw || !dstRaw) return { output: t("terminal.usage.mv") };
       const srcSegs = dirParts(srcRaw);
       const dstSegs = dirParts(dstRaw);
-      if (srcSegs.length < 2) return { output: "mv: src must include section (e.g. projects/file)" };
-      if (dstSegs.length < 2) return { output: "mv: dest must include section (e.g. projects/folder)" };
+      if (srcSegs.length < 2) return { output: t("terminal.mvSrcError") };
+      if (dstSegs.length < 2) return { output: t("terminal.mvDstError") };
       const srcR = resolveSectionPath(db, srcSegs);
-      if ("error" in srcR) return { output: `mv: src: ${srcR.error}` };
+      if ("error" in srcR) return { output: t("terminal.mvSrcResolveError", { error: srcR.error }) };
       const dstR = resolveSectionPath(db, dstSegs);
-      if ("error" in dstR) return { output: `mv: dst: ${dstR.error}` };
+      if ("error" in dstR) return { output: t("terminal.mvDstResolveError", { error: dstR.error }) };
       if (PROTECTED_IDS.includes(srcR.sectionId) || PROTECTED_IDS.includes(dstR.sectionId)) {
-        return { output: "Error: Cannot move items in/out of protected sections." };
+        return { output: t("terminal.error.protectedItem") };
       }
-      if (!srcR.itemName) return { output: "mv: src must point to an item" };
+      if (!srcR.itemName) return { output: t("terminal.mvSrcNotItem") };
       const srcItem = findItemByNameAndParent(db, srcR.sectionId, srcR.itemName, srcR.parentItemId);
-      if (!srcItem) return { output: "mv: src item not found" };
+      if (!srcItem) return { output: t("terminal.mvSrcNotFound") };
       saveItem(db, {
         id: srcItem.id,
         section_id: srcItem.section_id,
@@ -429,24 +405,24 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
         meta: srcItem.meta_json ? (safeJsonParse(srcItem.meta_json) as Record<string, string>) : undefined,
         sort_order: srcItem.sort_order,
       });
-      return { output: `Moved "${srcR.itemName}" to target folder.`, didMutate: true };
+      return { output: t("terminal.success.moved", { name: srcR.itemName }), didMutate: true };
     }
 
     case "rm": {
       const target = parts.slice(1).join(" ");
-      if (!target) return { output: "Usage: rm <path> (e.g. rm projects/my-file)" };
+      if (!target) return { output: t("terminal.usage.rm") };
       const segs = dirParts(target);
-      if (segs.length < 2) return { output: "Usage: rm <section_id>/<item_name>" };
+      if (segs.length < 2) return { output: t("terminal.usage.rm") };
       const r = resolveSectionPath(db, segs);
-      if ("error" in r) return { output: `rm: ${r.error}` };
-      if (!r.itemName) return { output: "rm: cannot remove a section (use rm-section)" };
-      if (PROTECTED_IDS.includes(r.sectionId)) return { output: `Error: Cannot delete item from protected section.` };
+      if ("error" in r) return { output: t("terminal.rmError", { error: r.error }) };
+      if (!r.itemName) return { output: t("terminal.rmSectionError") };
+      if (PROTECTED_IDS.includes(r.sectionId)) return { output: t("terminal.error.protectedItem") };
       const item = findItemByNameAndParent(db, r.sectionId, r.itemName, r.parentItemId);
-      if (!item) return { output: `rm: "${r.itemName}" not found.` };
+      if (!item) return { output: t("terminal.rmNotFound", { name: r.itemName }) };
       const children = findChildrenRecursive(db, item.id);
       for (const child of children) removeItem(db, child.id);
       removeItem(db, item.id);
-      return { output: `"${r.itemName}" and ${children.length} child items deleted.`, didMutate: true };
+      return { output: t("terminal.success.rmItems", { name: r.itemName, count: children.length }), didMutate: true };
     }
 
     case "export": {
@@ -458,14 +434,14 @@ function runCommand(input: string, cwd: string, maxFolders: number): { output: s
     }
 
     default:
-      return { output: `Unknown command: ${cmd}. Type "help" for available commands.` };
+      return { output: t("terminal.error.unknownCmd", { cmd }) };
   }
 }
 
-function Prompt({ cwd }: { cwd: string }) {
+function Prompt({ cwd, t }: { cwd: string; t: (key: string, params?: Record<string, string | number>) => string }) {
   return (
     <span>
-      <span className="terminal-prompt-user">user@portfolio</span>
+      <span className="terminal-prompt-user">{t("terminal.prompt.user")}@{t("terminal.prompt.host")}</span>
       <span className="terminal-prompt-sep">:</span>
       <span className="terminal-prompt-cwd">{cwd}</span>
       <span className="terminal-prompt-symbol">$ </span>
@@ -480,8 +456,9 @@ interface TerminalProps {
 }
 
 function Terminal({ onClose, onDbChange, maxFolders = 999 }: TerminalProps) {
+  const { t } = useT();
   const [history, setHistory] = useState<HistoryEntry[]>([
-    { input: "", output: "Portfolio DB Terminal v1.0\nType 'help' for available commands." },
+    { input: "", output: t("terminal.welcome") },
   ]);
   const [input, setInput] = useState("");
   const [cwd, setCwd] = useState("/");
@@ -505,7 +482,7 @@ function Terminal({ onClose, onDbChange, maxFolders = 999 }: TerminalProps) {
         setHistory((prev) => [...prev, { input: value, output: "" }]);
         return;
       }
-      const result = runCommand(value, cwd, maxFolders);
+      const result = runCommand(value, cwd, maxFolders, t);
 
       if (result.output === "__CLEAR__") {
         setHistory([]);
@@ -623,7 +600,7 @@ function Terminal({ onClose, onDbChange, maxFolders = 999 }: TerminalProps) {
           <div key={i}>
             {entry.input !== "" && (
               <div>
-                <Prompt cwd={cwd} />
+                <Prompt cwd={cwd} t={t} />
                 {entry.input}
               </div>
             )}
@@ -634,7 +611,7 @@ function Terminal({ onClose, onDbChange, maxFolders = 999 }: TerminalProps) {
         ))}
       </div>
       <div className="terminal-input-line" onClick={() => inputRef.current?.focus()}>
-        <Prompt cwd={cwd} />
+        <Prompt cwd={cwd} t={t} />
         <input
           ref={inputRef}
           type="text"

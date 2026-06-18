@@ -7,6 +7,8 @@ export interface ProfileData {
   tagline: string;
   bio: string;
   skills: string[];
+  tagline_es?: string;
+  bio_es?: string;
 }
 
 export function getProfile(db: Database): ProfileData | undefined {
@@ -18,9 +20,19 @@ export function getProfile(db: Database): ProfileData | undefined {
     tagline: row.tagline,
     bio: row.bio,
     skills: JSON.parse(row.skills),
+    tagline_es: (row as Record<string, unknown>).tagline_es as string | null ?? undefined,
+    bio_es: (row as Record<string, unknown>).bio_es as string | null ?? undefined,
   };
 }
 
 export function saveProfile(db: Database, data: ProfileData) {
-  upsertProfile(db, data);
+  upsertProfile(db, {
+    avatar: data.avatar,
+    name: data.name,
+    tagline: data.tagline,
+    bio: data.bio,
+    skills: data.skills,
+    tagline_es: data.tagline_es,
+    bio_es: data.bio_es,
+  });
 }

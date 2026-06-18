@@ -240,3 +240,66 @@
         inset -1px -1px 0 #404040;
     padding: 2px 8px;
 }
+
+.lang-switcher {
+    display: flex;
+    gap: 2px;
+    margin-right: 4px;
+}
+
+.lang-switcher-btn {
+    padding: 2px 7px;
+    background: transparent;
+    border: 1px solid var(--taskbar-text);
+    color: var(--taskbar-text);
+    font-family: var(--heading-font);
+    font-size: 10px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1.4;
+}
+
+.lang-switcher-btn.active {
+    background: var(--taskbar-text);
+    color: var(--taskbar-bg);
+}
+
+.lang-switcher-btn:hover {
+    opacity: 0.8;
+}
+
+[data-theme="pixel"] .lang-switcher-btn {
+    border: 2px solid var(--icon-color);
+    color: var(--icon-color);
+}
+
+[data-theme="pixel"] .lang-switcher-btn.active {
+    background: var(--icon-color);
+    color: var(--bg);
+}
+
+[data-theme="classic"] .lang-switcher-btn {
+    border: 1px solid #808080;
+    box-shadow:
+        inset 1px 1px 0 #fff,
+        inset -1px -1px 0 #404040;
+    padding: 1px 6px;
+}
+
+[data-theme="classic"] .lang-switcher-btn.active {
+    box-shadow:
+        inset -1px -1px 0 #fff,
+        inset 1px 1px 0 #404040;
+    background: #c0c0c0;
+    color: #000;
+}
+
+[data-theme="terminal"] .lang-switcher-btn {
+    border: 1px solid #00ff00;
+    color: #00ff00;
+}
+
+[data-theme="terminal"] .lang-switcher-btn.active {
+    background: #00ff00;
+    color: #000;
+}

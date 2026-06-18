@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useT } from "../context/LanguageContext";
 
 interface FileNavbarProps {
   onSave: () => void;
@@ -68,31 +69,32 @@ function MenuDropdown({ items, onClose }: { items: MenuItem[]; onClose: () => vo
 }
 
 function FileNavbar({ onSave, onPreview, previewing, onSelectAll, onSaveForever, onOpenHelp }: FileNavbarProps) {
+  const { t } = useT();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   const fileItems: MenuItem[] = [
-    { label: "Save", shortcut: "Ctrl+S", onClick: onSave },
-    { label: previewing ? "Edit" : "Preview", onClick: onPreview },
+    { label: t("fileNavbar.save"), shortcut: "Ctrl+S", onClick: onSave },
+    { label: previewing ? t("fileNavbar.edit") : t("fileNavbar.preview"), onClick: onPreview },
   ];
   if (onSaveForever) {
-    fileItems.push({ label: "Save Forever", onClick: onSaveForever });
+    fileItems.push({ label: t("fileNavbar.saveForever"), onClick: onSaveForever });
   }
 
   const menus: { label: string; items: MenuItem[] }[] = [
-    { label: "File", items: fileItems },
+    { label: t("fileNavbar.file"), items: fileItems },
     {
-      label: "Selection",
+      label: t("fileNavbar.selection"),
       items: [
-        { label: "Select All", shortcut: "Ctrl+A", onClick: onSelectAll },
+        { label: t("fileNavbar.selectAll"), shortcut: "Ctrl+A", onClick: onSelectAll },
       ],
     },
   ];
 
   if (onOpenHelp) {
     menus.push({
-      label: "Help",
+      label: t("fileNavbar.help"),
       items: [
-        { label: "About Text Editor", onClick: onOpenHelp },
+        { label: t("fileNavbar.aboutTextEditor"), onClick: onOpenHelp },
       ],
     });
   }

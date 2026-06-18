@@ -22,18 +22,20 @@ export function findProfile(db: Database): ProfileRow | undefined {
 
 export function upsertProfile(
   db: Database,
-  profile: { avatar: string; name: string; tagline: string; bio: string; skills: string[] },
+  profile: { avatar: string; name: string; tagline: string; bio: string; skills: string[]; tagline_es?: string; bio_es?: string },
 ) {
   db.run(
-    `INSERT INTO profile (id, avatar, name, tagline, bio, skills)
-     VALUES (1, ?, ?, ?, ?, ?)
+    `INSERT INTO profile (id, avatar, name, tagline, bio, skills, tagline_es, bio_es)
+     VALUES (1, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        avatar = excluded.avatar,
        name = excluded.name,
        tagline = excluded.tagline,
        bio = excluded.bio,
-       skills = excluded.skills`,
-    [profile.avatar, profile.name, profile.tagline, profile.bio, JSON.stringify(profile.skills)],
+       skills = excluded.skills,
+       tagline_es = excluded.tagline_es,
+       bio_es = excluded.bio_es`,
+    [profile.avatar, profile.name, profile.tagline, profile.bio, JSON.stringify(profile.skills), profile.tagline_es ?? null, profile.bio_es ?? null],
   );
 }
 

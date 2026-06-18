@@ -11,6 +11,9 @@ export interface ItemData {
   url?: string;
   meta?: Record<string, string>;
   parentItemId?: string;
+  title_es?: string;
+  description_es?: string;
+  body_es?: string;
 }
 
 export interface SectionData {
@@ -18,19 +21,23 @@ export interface SectionData {
   label: string;
   type: "file" | "folder" | "terminal";
   items: ItemData[];
+  label_es?: string;
 }
 
-function mapItem(i: { id: string; parent_item_id: string | null; title: string; description: string | null; date: string | null; tags: string | null; body: string | null; url: string | null; meta_json: string | null }): ItemData {
+function mapItem(i: Record<string, unknown>): ItemData {
   return {
-    id: i.id,
-    title: i.title,
-    description: i.description ?? undefined,
-    date: i.date ?? undefined,
-    tags: i.tags ? JSON.parse(i.tags) : undefined,
-    body: i.body ?? undefined,
-    url: i.url ?? undefined,
-    meta: i.meta_json ? JSON.parse(i.meta_json) : undefined,
-    parentItemId: i.parent_item_id ?? undefined,
+    id: i.id as string,
+    title: i.title as string,
+    description: (i.description as string | null) ?? undefined,
+    date: (i.date as string | null) ?? undefined,
+    tags: i.tags ? JSON.parse(i.tags as string) : undefined,
+    body: (i.body as string | null) ?? undefined,
+    url: (i.url as string | null) ?? undefined,
+    meta: i.meta_json ? JSON.parse(i.meta_json as string) : undefined,
+    parentItemId: (i.parent_item_id as string | null) ?? undefined,
+    title_es: (i.title_es as string | null) ?? undefined,
+    description_es: (i.description_es as string | null) ?? undefined,
+    body_es: (i.body_es as string | null) ?? undefined,
   };
 }
 
@@ -41,6 +48,7 @@ export function getSections(db: Database): SectionData[] {
     label: s.label,
     type: s.type,
     items: findItemsBySectionId(db, s.id).map(mapItem),
+    label_es: (s as Record<string, unknown>).label_es as string | null ?? undefined,
   }));
 }
 
@@ -52,7 +60,7 @@ export function getChildItems(db: Database, parentId: string): ItemData[] {
   return findItemsByParentId(db, parentId).map(mapItem);
 }
 
-export function saveSection(db: Database, section: { id: string; label: string; type: "file" | "folder" | "terminal"; sort_order?: number }) {
+export function saveSection(db: Database, section: { id: string; label: string; type: "file" | "folder" | "terminal"; sort_order?: number; label_es?: string }) {
   upsertSection(db, section);
 }
 
@@ -70,6 +78,9 @@ export function saveItem(
     meta?: Record<string, string>;
     parent_item_id?: string;
     sort_order?: number;
+    title_es?: string;
+    description_es?: string;
+    body_es?: string;
   },
 ) {
   upsertItem(db, item);

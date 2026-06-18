@@ -3,6 +3,8 @@ import type { WindowState } from "../types/desktop";
 import type { Theme } from "../types/themes";
 import Clock from "./Clock";
 import StartMenu from "./StartMenu";
+import LangSwitcher from "./LangSwitcher";
+import { useT } from "../context/LanguageContext";
 
 interface TaskbarProps {
   windows: WindowState[];
@@ -21,6 +23,7 @@ export default function Taskbar({
   onToggleMinimize,
   onFocus,
 }: TaskbarProps) {
+  const { t } = useT();
   return (
     <div className="taskbar" role="toolbar" aria-label="Taskbar">
       <StartMenuButton
@@ -28,7 +31,7 @@ export default function Taskbar({
         currentTheme={currentTheme}
         onSelectTheme={onSelectTheme}
       />
-      <div className="taskbar-items" role="tablist" aria-label="Open windows">
+      <div className="taskbar-items" role="tablist" aria-label={t("taskbar.windowsList")}>
         {windows
           .filter((w) => w.isOpen)
           .map((w) => (
@@ -51,6 +54,7 @@ export default function Taskbar({
             </button>
           ))}
       </div>
+      <LangSwitcher />
       <AppsButton
         windows={windows}
         onToggleMinimize={onToggleMinimize}
@@ -70,6 +74,7 @@ function AppsButton({
   onToggleMinimize: (id: string) => void;
   onFocus: (id: string) => void;
 }) {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const openWindows = useMemo(() => windows.filter((w) => w.isOpen), [windows]);
 
@@ -79,17 +84,17 @@ function AppsButton({
         <button
           className="taskbar-apps"
           onClick={() => setOpen((v) => !v)}
-          aria-label={`${openWindows.length} open windows`}
+          aria-label={t("taskbar.openWindows", { count: openWindows.length })}
           aria-expanded={open}
           aria-haspopup="menu"
         >
-          Apps ({openWindows.length})
+          {t("taskbar.apps.count", { count: openWindows.length })}
         </button>
       )}
       {open && (
         <>
           <div className="apps-overlay" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div className="apps-menu" role="menu" aria-label="Open windows">
+          <div className="apps-menu" role="menu" aria-label={t("taskbar.windowsList")}>
             {openWindows.map((w) => (
               <button
                 key={w.id}
@@ -106,7 +111,7 @@ function AppsButton({
                 }}
               >
                 <span className="apps-menu-item-name">{w.title}</span>
-                <span className="apps-menu-item-desc">{w.isMinimized ? "Minimized" : "Active"}</span>
+                <span className="apps-menu-item-desc">{w.isMinimized ? t("taskbar.minimized") : t("taskbar.active")}</span>
               </button>
             ))}
           </div>
@@ -125,6 +130,7 @@ function StartMenuButton({
   currentTheme: string;
   onSelectTheme: (id: string) => void;
 }) {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
 
   return (
@@ -132,11 +138,11 @@ function StartMenuButton({
       <button
         className={`taskbar-start${open ? " active" : ""}`}
         onClick={() => setOpen((v) => !v)}
-        aria-label="Open theme menu"
+        aria-label={t("taskbar.openThemeMenu")}
         aria-expanded={open}
         aria-haspopup="menu"
       >
-        Themes
+        {t("taskbar.themes")}
       </button>
       {open && (
         <StartMenu

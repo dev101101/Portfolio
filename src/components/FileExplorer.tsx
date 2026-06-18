@@ -15,6 +15,7 @@ import { saveItem, removeItem } from "../data/controllers/section";
 import { findItemsBySectionId } from "../data/models/section";
 import { fetchBlogList, fetchBlogArticle, mapDevtoToPageItem } from "../data/blog-api";
 import { PROTECTED_IDS } from "../data/constants";
+import { useT } from "../context/LanguageContext";
 import Folder from "./Folder";
 import File from "./File";
 import ContentPage from "./ContentPage";
@@ -30,6 +31,7 @@ function BlogArticleWrapper({ articleId, title, description, tags, date, url, co
   url?: string;
   coverImage?: string;
 }) {
+  const { t } = useT();
   const [article, setArticle] = useState<PageItem | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -51,7 +53,7 @@ function BlogArticleWrapper({ articleId, title, description, tags, date, url, co
   if (loading) {
     return (
       <div className="window-content-inner">
-        <div className="blog-article-loading">Loading article...</div>
+        <div className="blog-article-loading">{t("explorer.loadingArticle")}</div>
       </div>
     );
   }
@@ -59,7 +61,7 @@ function BlogArticleWrapper({ articleId, title, description, tags, date, url, co
   if (!article) {
     return (
       <div className="window-content-inner">
-        <div className="blog-article-error">Failed to load article.</div>
+        <div className="blog-article-error">{t("explorer.failedArticle")}</div>
       </div>
     );
   }
@@ -116,8 +118,8 @@ function buildBlogItems(articles: Awaited<ReturnType<typeof fetchBlogList>>): Fo
   }));
 }
 
-function getExplorerSections(): ExplorerSection[] {
-  const raw = getSections();
+function getExplorerSections(lang?: string): ExplorerSection[] {
+  const raw = getSections(lang);
   if (raw.length === 0) return [];
   return raw.map((s) => ({
     id: s.id,
@@ -135,12 +137,12 @@ function getExplorerSections(): ExplorerSection[] {
   }));
 }
 
-function getItemsForNav(sectionId: string, parentItemId?: string): FolderItem[] {
+function getItemsForNav(sectionId: string, parentItemId?: string, lang?: string): FolderItem[] {
   if (!parentItemId) {
-    const rootItems = getRootItems(sectionId);
+    const rootItems = getRootItems(sectionId, lang);
     return buildItemsFrom(rootItems, sectionId);
   }
-  const childItems = getChildItems(parentItemId);
+  const childItems = getChildItems(parentItemId, lang);
   return buildItemsFrom(childItems, sectionId);
 }
 
@@ -172,6 +174,7 @@ function FileExplorer({
   onOpenSection,
   onOpenItem,
 }: FileExplorerProps) {
+  const { t, lang } = useT();
   const FolderIcon =
     theme === "pixel"
       ? PixelFolder
@@ -190,7 +193,7 @@ function FileExplorer({
           ? TerminalFile
           : ModernFile;
 
-  const [staticSections] = useState<ExplorerSection[]>(() => getExplorerSections());
+  const [staticSections] = useState<ExplorerSection[]>(() => getExplorerSections(lang));
   const [blogItems, setBlogItems] = useState<FolderItem[] | null>(null);
   const [blogLoading, setBlogLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -246,7 +249,7 @@ function FileExplorer({
     if (PROTECTED_IDS.includes(currentSectionId)) {
       return sec.items;
     }
-    const items = getItemsForNav(currentSectionId, currentParentItemId);
+    const items = getItemsForNav(currentSectionId, currentParentItemId, lang);
     return items;
   }, [currentSectionId, currentParentItemId, sections, refreshKey]);
 
@@ -400,7 +403,7 @@ function FileExplorer({
           </div>
           <div className="explorer-content" role="tabpanel" aria-label="Content">
             {selectedSection === "blog" && blogLoading ? (
-              <div className="blog-section-loading">Loading blog posts...</div>
+              <div className="blog-section-loading">{t("explorer.loadingBlog")}</div>
             ) : null}
           </div>
         </div>
@@ -430,7 +433,7 @@ function FileExplorer({
 
         <div className="explorer-content" role="tabpanel" aria-label="Content">
           {selectedSection === "blog" && blogLoading && !blogItems ? (
-            <div className="blog-section-loading">Loading blog posts...</div>
+            <div className="blog-section-loading">{t("explorer.loadingBlog")}</div>
           ) : selectedItem ? (
             <File
               detail={
@@ -447,7 +450,7 @@ function FileExplorer({
                     className="explorer-breadcrumb-back"
                     onClick={handleNavigateBack}
                   >
-                    ← Back
+                    {t("explorer.back")}
                   </span>
                   <span className="explorer-breadcrumb-path">
                     {navStack.map((n) => n.label).join(" › ")}

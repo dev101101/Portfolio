@@ -10,6 +10,7 @@ import {
   ModernFile,
   TerminalFile,
 } from "./FolderSvgs";
+import { useT } from "../context/LanguageContext";
 
 export interface FolderItem {
   id?: string;
@@ -38,6 +39,7 @@ interface FolderProps {
 let _dragData: { sectionId: string; itemName: string; parentItemId: string | null } | null = null;
 
 function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisabled, onCreateFile, onCreateFolder, parentItemId, onDropOnFolder, onOpenItem, onDeleteItem }: FolderProps) {
+  const { t } = useT();
   const FolderIcon = theme === "pixel" ? PixelFolder :
     theme === "classic" ? ClassicFolder :
     theme === "terminal" ? TerminalFolder :
@@ -229,7 +231,7 @@ function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisab
             onMouseEnter={(e) => { (e.target as HTMLElement).style.background = "var(--menu-hover-bg, #e0e0e0)"; }}
             onMouseLeave={(e) => { (e.target as HTMLElement).style.background = "transparent"; }}
           >
-            New File
+            {t("folder.newFile")}
           </div>
           <div
             className="folder-context-item"
@@ -237,7 +239,7 @@ function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisab
             onMouseEnter={(e) => { (e.target as HTMLElement).style.background = "var(--menu-hover-bg, #e0e0e0)"; }}
             onMouseLeave={(e) => { (e.target as HTMLElement).style.background = "transparent"; }}
           >
-            New Folder
+            {t("folder.newFolder")}
           </div>
         </div>
         );
@@ -260,7 +262,7 @@ function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisab
             onMouseEnter={(e) => { (e.target as HTMLElement).style.background = "var(--menu-hover-bg, #e0e0e0)"; }}
             onMouseLeave={(e) => { (e.target as HTMLElement).style.background = "transparent"; }}
           >
-            Open
+            {t("folder.open")}
           </div>
           <div
             className="folder-context-item"
@@ -268,7 +270,7 @@ function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisab
             onMouseEnter={(e) => { (e.target as HTMLElement).style.background = "var(--menu-hover-bg, #e0e0e0)"; }}
             onMouseLeave={(e) => { (e.target as HTMLElement).style.background = "transparent"; }}
           >
-            Delete
+            {t("folder.delete")}
           </div>
         </div>
         );
@@ -285,7 +287,7 @@ function Folder({ items, theme, onOpenFile, onSelectFolder, sectionId, dragDisab
               ref={inputRef}
               type="text"
               className="filebrowser-create-inline"
-              placeholder={creating === "file" ? "New file..." : "New folder..."}
+              placeholder={creating === "file" ? t("folder.newFilePlaceholder") : t("folder.newFolderPlaceholder")}
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               onBlur={handleCreateBlur}

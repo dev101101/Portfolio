@@ -78,16 +78,17 @@ export function findItemsByParentId(db: Database, parentId: string): ItemRow[] {
 
 export function upsertSection(
   db: Database,
-  section: { id: string; label: string; type: "file" | "folder" | "terminal"; sort_order?: number },
+  section: { id: string; label: string; type: "file" | "folder" | "terminal"; sort_order?: number; label_es?: string },
 ) {
   db.run(
-    `INSERT INTO sections (id, label, type, sort_order)
-     VALUES (?, ?, ?, ?)
+    `INSERT INTO sections (id, label, type, sort_order, label_es)
+     VALUES (?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        label = excluded.label,
        type = excluded.type,
-       sort_order = excluded.sort_order`,
-    [section.id, section.label, section.type, section.sort_order ?? 0],
+       sort_order = excluded.sort_order,
+       label_es = excluded.label_es`,
+    [section.id, section.label, section.type, section.sort_order ?? 0, section.label_es ?? null],
   );
 }
 
@@ -105,12 +106,15 @@ export function upsertItem(
     meta?: Record<string, string>;
     parent_item_id?: string;
     sort_order?: number;
+    title_es?: string;
+    description_es?: string;
+    body_es?: string;
   },
 ) {
   const parentVal = item.parent_item_id ?? null;
   db.run(
-    `INSERT INTO items (id, section_id, parent_item_id, title, description, date, tags, body, url, meta_json, sort_order)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO items (id, section_id, parent_item_id, title, description, date, tags, body, url, meta_json, sort_order, title_es, description_es, body_es)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        title = excluded.title,
        description = excluded.description,
@@ -120,7 +124,10 @@ export function upsertItem(
        url = excluded.url,
        meta_json = excluded.meta_json,
        parent_item_id = excluded.parent_item_id,
-       sort_order = excluded.sort_order`,
+       sort_order = excluded.sort_order,
+       title_es = excluded.title_es,
+       description_es = excluded.description_es,
+       body_es = excluded.body_es`,
     [
       item.id,
       item.section_id,
@@ -133,6 +140,9 @@ export function upsertItem(
       item.url ?? null,
       item.meta ? JSON.stringify(item.meta) : null,
       item.sort_order ?? 0,
+      item.title_es ?? null,
+      item.description_es ?? null,
+      item.body_es ?? null,
     ],
   );
 }

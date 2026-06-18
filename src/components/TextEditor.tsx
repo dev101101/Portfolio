@@ -3,6 +3,7 @@ import { initDb, persistDb } from "../data/db";
 import { findItemsBySectionId, upsertItem } from "../data/models/section";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useT } from "../context/LanguageContext";
 
 interface TextEditorProps {
   sectionId: string;
@@ -31,6 +32,15 @@ function hasDirectiveInBody(body: string, type: string): boolean {
   return false;
 }
 
+function getLang(): string {
+  try { return localStorage.getItem("portfolio-lang") || "en"; } catch { return "en"; }
+}
+
+function pickLang(valEn: string, valEs: string | null | undefined, lang: string): string {
+  if (lang === "es" && valEs != null) return valEs;
+  return valEn;
+}
+
 function loadItem(sectionId: string, itemId?: string): string {
   const db = initDb();
   if (!db) return "";
@@ -38,15 +48,18 @@ function loadItem(sectionId: string, itemId?: string): string {
   if (items.length === 0) return "";
   const item = itemId ? items.find((i) => i.id === itemId) ?? items[0]! : items[0]!;
   if (!item) return "";
-  const body = item.body ?? "";
+  const lang = getLang();
+  const body = pickLang(item.body ?? "", (item as Record<string, unknown>).body_es as string | null, lang);
   const lines: string[] = [];
-  if (item.title && !hasDirectiveInBody(body, "title")) {
-    for (const t of item.title.split(", ")) {
+  const title = pickLang(item.title, (item as Record<string, unknown>).title_es as string | null, lang);
+  if (title && !hasDirectiveInBody(body, "title")) {
+    for (const t of title.split(", ")) {
       if (t.trim()) lines.push(`[title: ${t.trim()}]`);
     }
   }
-  if (item.description && !hasDirectiveInBody(body, "description")) {
-    for (const d of item.description.split("\n")) {
+  const description = pickLang(item.description ?? "", (item as Record<string, unknown>).description_es as string | null, lang);
+  if (description && !hasDirectiveInBody(body, "description")) {
+    for (const d of description.split("\n")) {
       if (d.trim()) lines.push(`[description: ${d.trim()}]`);
     }
   }
@@ -110,6 +123,7 @@ function parseDirectives(text: string) {
 
 const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(
   ({ sectionId, sectionLabel, onDbChange, locked, preview, itemId }, ref) => {
+    const { t } = useT();
     const [text, setText] = useState(() => loadItem(sectionId, itemId));
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const parsed = useMemo(() => parseDirectives(text), [text]);
@@ -163,7 +177,7 @@ const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(
 
       return (
         <div className="window-content-inner editor-preview-inner">
-          {!hasContent && <p className="editor-rendered-empty">Empty file</p>}
+          {!hasContent && <p className="editor-rendered-empty">{t("editor.emptyFile")}</p>}
           {hasContent && (
             <div className="editor-rendered">
               {(title.length > 0 || description.length > 0 || tags.length > 0 || Object.keys(meta).length > 0) && (

@@ -1,4 +1,5 @@
 import type { Theme } from "../types/themes";
+import { useT } from "../context/LanguageContext";
 
 interface StartMenuProps {
   themes: Theme[];
@@ -8,26 +9,27 @@ interface StartMenuProps {
 }
 
 function StartMenu({ themes, currentTheme, onSelectTheme, onClose }: StartMenuProps) {
+  const { t } = useT();
   return (
     <>
       <div className="start-overlay" onClick={onClose} aria-hidden="true" />
-      <div className="start-menu" role="menu" aria-label="Theme selector">
-        <div className="start-menu-title">Portfolio OS</div>
+      <div className="start-menu" role="menu" aria-label={t("startMenu.themes")}>
+        <div className="start-menu-title">{t("startMenu.title")}</div>
         <div className="start-menu-section">
-          <div className="start-menu-section-title">Themes</div>
-          {themes.map((t) => (
+          <div className="start-menu-section-title">{t("startMenu.themes")}</div>
+          {themes.map((th) => (
             <button
-              key={t.id}
+              key={th.id}
               role="menuitemradio"
-              aria-checked={currentTheme === t.id}
-              className={`start-menu-item${currentTheme === t.id ? " selected" : ""}`}
+              aria-checked={currentTheme === th.id}
+              className={`start-menu-item${currentTheme === th.id ? " selected" : ""}`}
               onClick={() => {
-                onSelectTheme(t.id);
+                onSelectTheme(th.id);
                 onClose();
               }}
             >
-              <span className="start-menu-item-name">{t.name}</span>
-              <span className="start-menu-item-desc">{t.description}</span>
+              <span className="start-menu-item-name">{th.name}</span>
+              <span className="start-menu-item-desc">{th.description}</span>
             </button>
           ))}
         </div>

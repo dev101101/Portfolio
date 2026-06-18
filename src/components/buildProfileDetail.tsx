@@ -1,36 +1,33 @@
 import type { ReactNode } from "react";
 import type { Profile } from "../data/db";
 
-export function buildProfileDetail(profile: Profile): ReactNode {
+export function buildProfileDetail(
+  profile: Profile,
+  t: (key: string) => string,
+  lang: string,
+): ReactNode {
   const parts: ReactNode[] = [];
 
   parts.push(
-    <div
-      key="avatar"
-      className="about-card"
-    >
-      <img
-        className="about-avatar"
-        src={profile.avatar}
-        alt={profile.name}
-      />
+    <div key="avatar" className="about-card">
+      <img className="about-avatar" src={profile.avatar} alt={profile.name} />
       <div className="about-card-text">
         <div className="about-card-header-row">
-          <h1 className="about-name-heading">
-            {profile.name}
-          </h1>
+          <h1 className="about-name-heading">{profile.name}</h1>
         </div>
         <div className="about-subtitle-row">
-          <p className="about-subtitle">
-            {profile.tagline}
-          </p>
+          <p className="about-subtitle">{profile.tagline}</p>
           <a
-            href="/resume.pdf"
+            href={
+              lang === "es"
+                ? "/cv_diego_amachi.pdf"
+                : "/resume_diego_amachi.pdf"
+            }
             download
             className="about-dl-btn"
-            aria-label="Download resume as PDF"
+            aria-label={t("profile.downloadResume")}
           >
-            ⬇ RESUME
+            {t("profile.resume")}
           </a>
         </div>
       </div>
@@ -39,10 +36,7 @@ export function buildProfileDetail(profile: Profile): ReactNode {
 
   if (profile.bio) {
     parts.push(
-      <div
-        key="bio"
-        className="about-bio"
-      >
+      <div key="bio" className="about-bio">
         {profile.bio.split("\n\n").map((p, i) => (
           <p key={i}>{p}</p>
         ))}
@@ -53,7 +47,7 @@ export function buildProfileDetail(profile: Profile): ReactNode {
   if (profile.skills.length > 0) {
     parts.push(
       <section key="skills">
-        <h2 className="skills-heading">Skills</h2>
+        <h2 className="skills-heading">{t("profile.skills")}</h2>
         <div className="skill-list">
           {profile.skills.map((skill) => (
             <span key={skill} className="skill-tag">
@@ -65,9 +59,5 @@ export function buildProfileDetail(profile: Profile): ReactNode {
     );
   }
 
-  return (
-    <div className="about-container">
-      {parts}
-    </div>
-  );
+  return <div className="about-container">{parts}</div>;
 }
